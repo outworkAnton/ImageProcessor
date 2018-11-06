@@ -85,8 +85,8 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="QuickIO.NET">
-      <Version>2.6.2</Version>
+    <PackageReference Include="Autofac">
+      <Version>4.8.1</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

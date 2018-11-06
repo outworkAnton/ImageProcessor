@@ -41,7 +41,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CopyFilesRepository.cs" />
+    <Compile Include="FileToModelConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="QuickIO.NET">
+      <Version>2.6.2</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DataAccess.Contract\DataAccess.Contract.csproj">
+      <Project>{F638D6A5-9EDE-4917-A2BD-6FB0790D6EFF}</Project>
+      <Name>DataAccess.Contract</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

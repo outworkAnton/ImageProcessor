@@ -12,16 +12,30 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BulkCopier", "UI\BulkCopier
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessLogic", "BusinessLogic\BusinessLogic\BusinessLogic.csproj", "{CB0D5131-A422-46BC-8C2B-136BAB932B23}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A6A8AC37-2987-4455-898C-591CF7E94599} = {A6A8AC37-2987-4455-898C-591CF7E94599}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessLogic.Contract", "BusinessLogic\BusinessLogic.Contract\BusinessLogic.Contract.csproj", "{A6A8AC37-2987-4455-898C-591CF7E94599}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessLogic.DI", "BusinessLogic\BusinessLogic.DI\BusinessLogic.DI.csproj", "{34D5B44E-6A9E-4457-8147-37AE9AE8AD82}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CB0D5131-A422-46BC-8C2B-136BAB932B23} = {CB0D5131-A422-46BC-8C2B-136BAB932B23}
+		{A6A8AC37-2987-4455-898C-591CF7E94599} = {A6A8AC37-2987-4455-898C-591CF7E94599}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\DataAccess\DataAccess.csproj", "{19C2C68A-8229-4F6E-A83D-B5867D8B68D2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F638D6A5-9EDE-4917-A2BD-6FB0790D6EFF} = {F638D6A5-9EDE-4917-A2BD-6FB0790D6EFF}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess.Contract", "DataAccess\DataAccess.Contract\DataAccess.Contract.csproj", "{F638D6A5-9EDE-4917-A2BD-6FB0790D6EFF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess.DI", "DataAccess\DataAccess.DI\DataAccess.DI.csproj", "{6BAD8971-A37F-46B7-B461-CC06B9EDC337}"
+	ProjectSection(ProjectDependencies) = postProject
+		{19C2C68A-8229-4F6E-A83D-B5867D8B68D2} = {19C2C68A-8229-4F6E-A83D-B5867D8B68D2}
+		{F638D6A5-9EDE-4917-A2BD-6FB0790D6EFF} = {F638D6A5-9EDE-4917-A2BD-6FB0790D6EFF}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
