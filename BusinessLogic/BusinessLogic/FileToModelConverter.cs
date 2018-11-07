@@ -1,22 +1,18 @@
-﻿using BulkCopier.Models;
-using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using BusinessLogic.Models;
 using SchwabenCode.QuickIO;
 
-namespace BulkCopier.Helpers
+namespace BusinessLogic
 {
-    static class FileToModelConverter
+    internal static class FileToModelConverter
     {
         public static ProductImage ConvertToModel(QuickIOFileInfo file)
         {
             return new ProductImage(file.Name, file.FullName);
         }
 
-        public static IReadOnlyCollection<ProductImage> ConvertToModels(IReadOnlyCollection<QuickIOFileInfo> files)
+        public static IReadOnlyCollection<ProductImage> ConvertToModels(IEnumerable<QuickIOFileInfo> files)
         {
             return files.Select(x => new ProductImage(x.Name, x.FullName)).ToArray();
         }
@@ -26,7 +22,7 @@ namespace BulkCopier.Helpers
             return new QuickIOFileInfo(productImage.Path);
         }
 
-        public static IReadOnlyCollection<QuickIOFileInfo> ConvertToFiles(IReadOnlyCollection<ProductImage> productImages)
+        public static IReadOnlyCollection<QuickIOFileInfo> ConvertToFiles(IEnumerable<ProductImage> productImages)
         {
             return productImages.Select(x => new QuickIOFileInfo(x.Path)).ToArray();
         }

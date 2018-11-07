@@ -12,6 +12,7 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -46,17 +47,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Helpers\FileSearchHelper.cs" />
-    <Compile Include="Helpers\FileToModelConverter.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Models\ProductImage.cs" />
-    <Compile Include="Processors\CopyFilesProcessor.cs" />
-    <Compile Include="Processors\IProcessor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="MainForm.resx">
@@ -88,6 +84,20 @@
     <PackageReference Include="Autofac">
       <Version>4.8.1</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\BusinessLogic\BusinessLogic.Contract\BusinessLogic.Contract.csproj">
+      <Project>{a6a8ac37-2987-4455-898c-591cf7e94599}</Project>
+      <Name>BusinessLogic.Contract</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BusinessLogic\BusinessLogic.DI\BusinessLogic.DI.csproj">
+      <Project>{34d5b44e-6a9e-4457-8147-37ae9ae8ad82}</Project>
+      <Name>BusinessLogic.DI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DataAccess\DataAccess.DI\DataAccess.DI.csproj">
+      <Project>{6bad8971-a37f-46b7-b461-cc06b9edc337}</Project>
+      <Name>DataAccess.DI</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

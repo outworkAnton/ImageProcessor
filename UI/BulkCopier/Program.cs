@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Autofac;
+using BusinessLogic.DI;
+using DataAccess.DI;
 
 namespace BulkCopier
 {
-    static class Program
+    internal static class Program
     {
         /// <summary>
         /// Главная точка входа для приложения.
@@ -16,7 +19,16 @@ namespace BulkCopier
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            Application.Run(CreateContainer().Resolve<MainForm>());
+        }
+
+        private static IContainer CreateContainer()
+        {
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new DataAccessAutofacModule());
+            builder.RegisterModule(new BusinessLogicAutofacModule());
+            builder.RegisterType<MainForm>().AsSelf();
+            return builder.Build();
         }
     }
 }

@@ -12,13 +12,17 @@ namespace DataAccess
     public class CopyFilesRepository : IDataAccessRepository
     {
         private IEnumerable<QuickIOFileInfo> _filesFounded;
-        private readonly QuickIODirectoryInfo _destinationDirectory;
         private readonly QuickIODirectoryInfo _sourceDirectory;
+        private QuickIODirectoryInfo _destinationDirectory;
 
-        public CopyFilesRepository(string sourceDirectory, string destinationDirectory)
+        public CopyFilesRepository(DataAccessContext context)
         {
-            _sourceDirectory = new QuickIODirectoryInfo(sourceDirectory);
-            _destinationDirectory = new QuickIODirectoryInfo(destinationDirectory);
+            //_sourceDirectory = new QuickIODirectoryInfo(context.GetSourcePath());
+        }
+
+        public void SetDestinationDirectory(string path)
+        {
+            _destinationDirectory = new QuickIODirectoryInfo(path);
         }
 
         public async Task CopyFile(string filename)
