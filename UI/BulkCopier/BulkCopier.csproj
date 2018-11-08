@@ -84,6 +84,9 @@
     <PackageReference Include="Autofac">
       <Version>4.8.1</Version>
     </PackageReference>
+    <PackageReference Include="System.Configuration.ConfigurationManager">
+      <Version>4.5.0</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\BusinessLogic\BusinessLogic.Contract\BusinessLogic.Contract.csproj">
@@ -97,6 +100,10 @@
     <ProjectReference Include="..\..\DataAccess\DataAccess.DI\DataAccess.DI.csproj">
       <Project>{6bad8971-a37f-46b7-b461-cc06b9edc337}</Project>
       <Name>DataAccess.DI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DataAccess\DataAccess\DataAccess.csproj">
+      <Project>{19c2c68a-8229-4f6e-a83d-b5867d8b68d2}</Project>
+      <Name>DataAccess</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

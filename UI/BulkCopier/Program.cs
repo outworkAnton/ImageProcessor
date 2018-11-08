@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Autofac;
 using BusinessLogic.DI;
+using DataAccess;
 using DataAccess.DI;
 
 namespace BulkCopier
@@ -25,6 +27,7 @@ namespace BulkCopier
         private static IContainer CreateContainer()
         {
             var builder = new ContainerBuilder();
+            var sourcePath = ConfigurationManager.ConnectionStrings["SourcePath"].ConnectionString;
             builder.RegisterModule(new DataAccessAutofacModule());
             builder.RegisterModule(new BusinessLogicAutofacModule());
             builder.RegisterType<MainForm>().AsSelf();

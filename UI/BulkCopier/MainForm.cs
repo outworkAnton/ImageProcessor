@@ -17,7 +17,7 @@ namespace BulkCopier
 
         public MainForm(ICopyFilesService service)
         {
-            _service = service;
+            _service = service ?? throw new ArgumentNullException(nameof(service));
             InitializeComponent();
         }
     }

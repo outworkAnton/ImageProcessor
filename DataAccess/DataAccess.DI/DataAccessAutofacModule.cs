@@ -11,10 +11,6 @@ namespace DataAccess.DI
             builder.RegisterType<CopyFilesRepository>()
                 .As<IDataAccessRepository>()
                 .InstancePerLifetimeScope();
-
-            builder.RegisterType<DataAccessContext>()
-                .AsSelf()
-                .InstancePerLifetimeScope();
         }
     }
 }

@@ -12,12 +12,12 @@ namespace DataAccess
     public class CopyFilesRepository : IDataAccessRepository
     {
         private IEnumerable<QuickIOFileInfo> _filesFounded;
-        private readonly QuickIODirectoryInfo _sourceDirectory;
+        private QuickIODirectoryInfo _sourceDirectory;
         private QuickIODirectoryInfo _destinationDirectory;
 
-        public CopyFilesRepository(DataAccessContext context)
+        public void SetSourceDirectory(string path)
         {
-            //_sourceDirectory = new QuickIODirectoryInfo(context.GetSourcePath());
+            _sourceDirectory = new QuickIODirectoryInfo(path);
         }
 
         public void SetDestinationDirectory(string path)
@@ -50,8 +50,12 @@ namespace DataAccess
             }
         }
 
-        public IReadOnlyCollection<QuickIOFileInfo> GetFile(string filename)
+        public async Task<IReadOnlyCollection<QuickIOFileInfo>> FindFile(string filename)
         {
+            if (!_filesFounded.Any())
+            {
+                await FindAllFiles().ConfigureAwait(false);
+            }
             return _filesFounded.Where(f => f.Name.StartsWith(filename)).ToArray();
         }
     }

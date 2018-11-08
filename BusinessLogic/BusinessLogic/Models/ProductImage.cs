@@ -2,7 +2,7 @@
 
 namespace BusinessLogic.Models
 {
-    internal class ProductImage
+    public class ProductImage
     {
         public ProductImage(string id, string path, int count = 1, bool processed = false)
         {
