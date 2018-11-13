@@ -66,7 +66,10 @@ namespace BulkCopier
 
         private async void DestinationBox_Leave(object sender, EventArgs e)
         {
-            await _service.SetDestinationDirectory(DestinationBox.Text).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(DestinationBox.Text))
+            {
+                await _service.SetDestinationDirectory(DestinationBox.Text).ConfigureAwait(false);
+            }
         }
 
         private async void DestinationBtn_Click(object sender, EventArgs e)

@@ -27,7 +27,6 @@ namespace BulkCopier
         private static IContainer CreateContainer()
         {
             var builder = new ContainerBuilder();
-            var sourcePath = ConfigurationManager.ConnectionStrings["SourcePath"].ConnectionString;
             builder.RegisterModule(new DataAccessAutofacModule());
             builder.RegisterModule(new BusinessLogicAutofacModule());
             builder.RegisterType<MainForm>().AsSelf();

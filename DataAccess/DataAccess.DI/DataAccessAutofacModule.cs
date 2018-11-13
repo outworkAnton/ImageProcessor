@@ -1,6 +1,5 @@
 ﻿using Autofac;
 using DataAccess.Contract.Interfaces;
-using Microsoft.Extensions.Configuration;
 
 namespace DataAccess.DI
 {

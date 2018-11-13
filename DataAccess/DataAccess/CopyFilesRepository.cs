@@ -11,7 +11,7 @@ namespace DataAccess
 {
     public class CopyFilesRepository : IDataAccessRepository
     {
-        private IReadOnlyCollection<QuickIOFileInfo> _filesFound;
+        private List<QuickIOFileInfo> _filesFound = new List<QuickIOFileInfo>();
         private QuickIODirectoryInfo _sourceDirectory;
         private QuickIODirectoryInfo _destinationDirectory;
 
@@ -49,17 +49,110 @@ namespace DataAccess
         {
             try
             {
-                _filesFound = (await _sourceDirectory
-                    .EnumerateFilesAsync("*.jpg", SearchOption.AllDirectories)
-                    .ConfigureAwait(false)).ToArray();
+                _filesFound.AddRange((await _sourceDirectory
+                    .EnumerateFilesAsync("*.jpg", SearchOption.AllDirectories, QuickIOEnumerateOptions.SuppressAllExceptions)
+                    .ConfigureAwait(false)).ToArray());
+
             }
             catch
             {
-                var dirExc = new DirectoryInfo(_sourceDirectory.FullName);
-                var files = dirExc.GetFiles("*.jpg", SearchOption.AllDirectories);
-                _filesFound = files.Select(f => new QuickIOFileInfo(f.FullName)).ToArray();
+                var files = FindAccessableFiles(_sourceDirectory.FullName, "*.jpg", true)
+                    .Select(file => new QuickIOFileInfo(file)).ToList();
+                _filesFound.AddRange(files);
             }
             return _filesFound.Count();
+        }
+
+        private IEnumerable<string> FindAccessableFiles(string path, string file_pattern, bool recurse)
+        {
+            Console.WriteLine(path);
+            var list = new List<string>();
+            var required_extension = "jpg";
+
+            if (File.Exists(path))
+            {
+                yield return path;
+                yield break;
+            }
+
+            if (!Directory.Exists(path))
+            {
+                yield break;
+            }
+
+            if (null == file_pattern)
+                file_pattern = "*." + required_extension;
+
+            var top_directory = new DirectoryInfo(path);
+
+            IEnumerator<FileInfo> files;
+            try
+            {
+                files = top_directory.EnumerateFiles(file_pattern).GetEnumerator();
+            }
+            catch (Exception ex)
+            {
+                files = null;
+            }
+
+            while (true)
+            {
+                FileInfo file = null;
+                try
+                {
+                    if (files != null && files.MoveNext())
+                        file = files.Current;
+                    else
+                        break;
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    continue;
+                }
+                catch (PathTooLongException)
+                {
+                    continue;
+                }
+
+                yield return file.FullName;
+            }
+
+            if (!recurse)
+                yield break;
+
+            IEnumerator<DirectoryInfo> dirs;
+            try
+            {
+                dirs = top_directory.EnumerateDirectories("*").GetEnumerator();
+            }
+            catch (Exception ex)
+            {
+                dirs = null;
+            }
+
+
+            while (true)
+            {
+                DirectoryInfo dir = null;
+                try
+                {
+                    if (dirs != null && dirs.MoveNext())
+                        dir = dirs.Current;
+                    else
+                        break;
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    continue;
+                }
+                catch (PathTooLongException)
+                {
+                    continue;
+                }
+
+                foreach (var subpath in FindAccessableFiles(dir.FullName, file_pattern, recurse))
+                    yield return subpath;
+            }
         }
 
         public async Task<IReadOnlyCollection<QuickIOFileInfo>> FindFile(string filename)
