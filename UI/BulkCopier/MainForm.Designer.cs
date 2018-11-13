@@ -55,7 +55,7 @@
             // 
             this.PictureBox.Location = new System.Drawing.Point(368, 109);
             this.PictureBox.Name = "PictureBox";
-            this.PictureBox.Size = new System.Drawing.Size(501, 600);
+            this.PictureBox.Size = new System.Drawing.Size(501, 519);
             this.PictureBox.TabIndex = 1;
             this.PictureBox.TabStop = false;
             // 
@@ -112,7 +112,7 @@
             this.listView1.MultiSelect = false;
             this.listView1.Name = "listView1";
             this.listView1.ShowItemToolTips = true;
-            this.listView1.Size = new System.Drawing.Size(350, 724);
+            this.listView1.Size = new System.Drawing.Size(350, 662);
             this.listView1.TabIndex = 3;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -125,11 +125,11 @@
             // Count
             // 
             this.Count.Text = "Количество";
-            this.Count.Width = 100;
+            this.Count.Width = 95;
             // 
             // DestinationBox
             // 
-            this.DestinationBox.Location = new System.Drawing.Point(456, 761);
+            this.DestinationBox.Location = new System.Drawing.Point(456, 680);
             this.DestinationBox.Name = "DestinationBox";
             this.DestinationBox.Size = new System.Drawing.Size(413, 20);
             this.DestinationBox.TabIndex = 4;
@@ -138,7 +138,7 @@
             // DestinationBtn
             // 
             this.DestinationBtn.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.DestinationBtn.Location = new System.Drawing.Point(367, 759);
+            this.DestinationBtn.Location = new System.Drawing.Point(367, 678);
             this.DestinationBtn.Name = "DestinationBtn";
             this.DestinationBtn.Size = new System.Drawing.Size(75, 23);
             this.DestinationBtn.TabIndex = 5;
@@ -148,7 +148,7 @@
             // 
             // SourceBox
             // 
-            this.SourceBox.Location = new System.Drawing.Point(456, 735);
+            this.SourceBox.Location = new System.Drawing.Point(456, 654);
             this.SourceBox.Name = "SourceBox";
             this.SourceBox.ReadOnly = true;
             this.SourceBox.Size = new System.Drawing.Size(413, 20);
@@ -157,7 +157,7 @@
             // SourceBtn
             // 
             this.SourceBtn.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.SourceBtn.Location = new System.Drawing.Point(367, 733);
+            this.SourceBtn.Location = new System.Drawing.Point(367, 652);
             this.SourceBtn.Name = "SourceBtn";
             this.SourceBtn.Size = new System.Drawing.Size(75, 23);
             this.SourceBtn.TabIndex = 5;
@@ -168,7 +168,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 759);
+            this.label1.Location = new System.Drawing.Point(12, 685);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(63, 13);
             this.label1.TabIndex = 6;
@@ -177,7 +177,7 @@
             // BarcodeCountLabel
             // 
             this.BarcodeCountLabel.AutoSize = true;
-            this.BarcodeCountLabel.Location = new System.Drawing.Point(81, 759);
+            this.BarcodeCountLabel.Location = new System.Drawing.Point(81, 685);
             this.BarcodeCountLabel.Name = "BarcodeCountLabel";
             this.BarcodeCountLabel.Size = new System.Drawing.Size(13, 13);
             this.BarcodeCountLabel.TabIndex = 6;
@@ -186,7 +186,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(265, 759);
+            this.label3.Location = new System.Drawing.Point(265, 685);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(53, 13);
             this.label3.TabIndex = 6;
@@ -195,7 +195,7 @@
             // ProductCountLabel
             // 
             this.ProductCountLabel.AutoSize = true;
-            this.ProductCountLabel.Location = new System.Drawing.Point(331, 759);
+            this.ProductCountLabel.Location = new System.Drawing.Point(331, 685);
             this.ProductCountLabel.Name = "ProductCountLabel";
             this.ProductCountLabel.Size = new System.Drawing.Size(13, 13);
             this.ProductCountLabel.TabIndex = 6;
@@ -216,7 +216,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(453, 712);
+            this.label2.Location = new System.Drawing.Point(453, 631);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(95, 13);
             this.label2.TabIndex = 8;
@@ -225,7 +225,7 @@
             // FoundFilesCount
             // 
             this.FoundFilesCount.AutoSize = true;
-            this.FoundFilesCount.Location = new System.Drawing.Point(554, 712);
+            this.FoundFilesCount.Location = new System.Drawing.Point(554, 631);
             this.FoundFilesCount.Name = "FoundFilesCount";
             this.FoundFilesCount.Size = new System.Drawing.Size(13, 13);
             this.FoundFilesCount.TabIndex = 9;
@@ -235,7 +235,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(881, 793);
+            this.ClientSize = new System.Drawing.Size(881, 710);
             this.Controls.Add(this.FoundFilesCount);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.BarcodeLabel);
