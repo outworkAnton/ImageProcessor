@@ -47,6 +47,7 @@ namespace DataAccess
 
         public async Task<int> FindAllFiles()
         {
+            _filesFound.Clear();
             try
             {
                 _filesFound.AddRange((await _sourceDirectory
@@ -161,7 +162,7 @@ namespace DataAccess
             {
                 await FindAllFiles().ConfigureAwait(false);
             }
-            return _filesFound.Where(f => f.Name.StartsWith(filename)).ToArray();
+            return _filesFound.Where(f => f.Name.StartsWith(filename, StringComparison.OrdinalIgnoreCase)).ToArray();
         }
     }
 }

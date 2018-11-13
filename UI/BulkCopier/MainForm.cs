@@ -12,8 +12,8 @@ namespace BulkCopier
     public partial class MainForm : Form
     {
         private readonly ICopyFilesService _service;
-        private IReadOnlyCollection<ProductImage> _foundImages;
-        private ProductImage _currentImage;
+        private List<ProductImage> _foundImages = new List<ProductImage>();
+        private IEnumerator<ProductImage> _foundImagesEnumerator;
 
         public MainForm(ICopyFilesService service)
         {
@@ -28,21 +28,35 @@ namespace BulkCopier
 
         private async void InputBarcodeBox_TextChanged(object sender, EventArgs e)
         {
-            InputBarcodeBox.BackColor = SystemColors.Control;
-            _foundImages = await _service.FindFiles(InputBarcodeBox.Text).ConfigureAwait(false);
-            _currentImage = _foundImages.First();
-            if (_currentImage != null)
+            if (string.IsNullOrWhiteSpace(InputBarcodeBox.Text))
             {
-                PictureBox.LoadAsync(_currentImage.Path);
+                InputBarcodeBox.BackColor = SystemColors.Control;
+                PictureBox.Image.Dispose();
+                PictureBox.Image = null;
+                BarcodeLabel.Text = "Артикул";
+                BarcodeLabel.Visible = false;
+                NextPicBtn.Visible = false;
+                return;
+            }
+            _foundImages.Clear();
+            _foundImagesEnumerator = null;
+            _foundImages = (await _service.FindFiles(InputBarcodeBox.Text).ConfigureAwait(false)).ToList();
+            
+            if (_foundImages.Any())
+            {
+                InputBarcodeBox.BackColor = Color.LimeGreen;
+                _foundImagesEnumerator = _foundImages.GetEnumerator();
+                _foundImagesEnumerator.MoveNext();
+                PictureBox.LoadAsync(_foundImagesEnumerator.Current.Path);
+                BarcodeLabel.Visible = true;
+                BarcodeLabel.Text = _foundImagesEnumerator.Current.Id;
 
                 if (_foundImages.Count > 1)
                 {
-                    PrevPicBtn.Visible = true;
                     NextPicBtn.Visible = true;
                 }
                 else
                 {
-                    PrevPicBtn.Visible = false;
                     NextPicBtn.Visible = false;
                 }
             }
@@ -69,6 +83,11 @@ namespace BulkCopier
             if (!string.IsNullOrWhiteSpace(DestinationBox.Text))
             {
                 await _service.SetDestinationDirectory(DestinationBox.Text).ConfigureAwait(false);
+                DestinationBox.BackColor = Color.LimeGreen;
+            }
+            else
+            {
+                DestinationBox.BackColor = SystemColors.Control;
             }
         }
 
@@ -79,6 +98,11 @@ namespace BulkCopier
             {
                 DestinationBox.Text = folderBrowserDialog1.SelectedPath;
                 await _service.SetDestinationDirectory(DestinationBox.Text).ConfigureAwait(false);
+                DestinationBox.BackColor = Color.LimeGreen;
+            }
+            else
+            {
+                DestinationBox.BackColor = SystemColors.Control;
             }
         }
 
@@ -96,6 +120,55 @@ namespace BulkCopier
                 _service.SetSourceDirectory(sourcePath);
                 FoundFilesCount.Text = (await _service.FindAllFiles()).ToString();
                 SourceBox.BackColor = Color.LimeGreen;
+            }
+        }
+
+        private void NextPicBtn_Click(object sender, EventArgs e)
+        {
+            if (!_foundImagesEnumerator.MoveNext())
+            {
+                _foundImagesEnumerator.Reset();
+                _foundImagesEnumerator.MoveNext();
+            }
+
+            if (PictureBox.Image != null)
+            {
+                PictureBox.Image.Dispose();
+                PictureBox.Image = null;
+            }
+
+            PictureBox.LoadAsync(_foundImagesEnumerator.Current.Path);
+            BarcodeLabel.Text = _foundImagesEnumerator.Current.Id;
+            InputBarcodeBox.Focus();
+        }
+
+        private void InputBarcodeBox_Leave(object sender, EventArgs e)
+        {
+            if (NextPicBtn.Focused || string.IsNullOrWhiteSpace(InputBarcodeBox.Text))
+            {
+                return;
+            }
+            ProductImagesList.Items.Insert(0, new ListViewItem(new[] { _foundImagesEnumerator.Current.Id, "" }));
+        }
+
+        private void ProductImagesList_DoubleClick(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ProductImagesList_KeyPress(object sender, KeyPressEventArgs e)
+        {
+
+        }
+
+        private void ProductImagesList_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode > Keys.D0 || e.KeyCode < Keys.D9)
+            {
+                if (e.KeyCode > Keys.NumPad0 || e.KeyCode < Keys.NumPad9)
+                {
+                    ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[1].Text = ((char)e.KeyValue).ToString();
+                }
             }
         }
     }

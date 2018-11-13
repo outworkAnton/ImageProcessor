@@ -31,9 +31,8 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.PictureBox = new System.Windows.Forms.PictureBox();
             this.InputBarcodeBox = new System.Windows.Forms.TextBox();
-            this.PrevPicBtn = new System.Windows.Forms.Button();
             this.NextPicBtn = new System.Windows.Forms.Button();
-            this.listView1 = new System.Windows.Forms.ListView();
+            this.ProductImagesList = new System.Windows.Forms.ListView();
             this.Barcode = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.Count = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.DestinationBox = new System.Windows.Forms.TextBox();
@@ -56,6 +55,7 @@
             this.PictureBox.Location = new System.Drawing.Point(368, 109);
             this.PictureBox.Name = "PictureBox";
             this.PictureBox.Size = new System.Drawing.Size(501, 519);
+            this.PictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.PictureBox.TabIndex = 1;
             this.PictureBox.TabStop = false;
             // 
@@ -73,18 +73,7 @@
             this.InputBarcodeBox.WordWrap = false;
             this.InputBarcodeBox.TextChanged += new System.EventHandler(this.InputBarcodeBox_TextChanged);
             this.InputBarcodeBox.DoubleClick += new System.EventHandler(this.InputBarcodeBox_DoubleClick);
-            // 
-            // PrevPicBtn
-            // 
-            this.PrevPicBtn.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.PrevPicBtn.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.PrevPicBtn.Location = new System.Drawing.Point(368, 48);
-            this.PrevPicBtn.Name = "PrevPicBtn";
-            this.PrevPicBtn.Size = new System.Drawing.Size(132, 55);
-            this.PrevPicBtn.TabIndex = 2;
-            this.PrevPicBtn.Text = "<";
-            this.PrevPicBtn.UseVisualStyleBackColor = true;
-            this.PrevPicBtn.Visible = false;
+            this.InputBarcodeBox.Leave += new System.EventHandler(this.InputBarcodeBox_Leave);
             // 
             // NextPicBtn
             // 
@@ -94,28 +83,33 @@
             this.NextPicBtn.Name = "NextPicBtn";
             this.NextPicBtn.Size = new System.Drawing.Size(132, 55);
             this.NextPicBtn.TabIndex = 2;
-            this.NextPicBtn.Text = ">";
+            this.NextPicBtn.Text = ">>>";
             this.NextPicBtn.UseVisualStyleBackColor = true;
             this.NextPicBtn.Visible = false;
+            this.NextPicBtn.Click += new System.EventHandler(this.NextPicBtn_Click);
             // 
-            // listView1
+            // ProductImagesList
             // 
-            this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.ProductImagesList.AutoArrange = false;
+            this.ProductImagesList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.Barcode,
             this.Count});
-            this.listView1.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.listView1.FullRowSelect = true;
-            this.listView1.GridLines = true;
-            this.listView1.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-            this.listView1.LabelEdit = true;
-            this.listView1.Location = new System.Drawing.Point(12, 12);
-            this.listView1.MultiSelect = false;
-            this.listView1.Name = "listView1";
-            this.listView1.ShowItemToolTips = true;
-            this.listView1.Size = new System.Drawing.Size(350, 662);
-            this.listView1.TabIndex = 3;
-            this.listView1.UseCompatibleStateImageBehavior = false;
-            this.listView1.View = System.Windows.Forms.View.Details;
+            this.ProductImagesList.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.ProductImagesList.FullRowSelect = true;
+            this.ProductImagesList.GridLines = true;
+            this.ProductImagesList.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.ProductImagesList.LabelEdit = true;
+            this.ProductImagesList.Location = new System.Drawing.Point(12, 12);
+            this.ProductImagesList.MultiSelect = false;
+            this.ProductImagesList.Name = "ProductImagesList";
+            this.ProductImagesList.ShowItemToolTips = true;
+            this.ProductImagesList.Size = new System.Drawing.Size(350, 662);
+            this.ProductImagesList.TabIndex = 3;
+            this.ProductImagesList.UseCompatibleStateImageBehavior = false;
+            this.ProductImagesList.View = System.Windows.Forms.View.Details;
+            this.ProductImagesList.DoubleClick += new System.EventHandler(this.ProductImagesList_DoubleClick);
+            this.ProductImagesList.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ProductImagesList_KeyDown);
+            this.ProductImagesList.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ProductImagesList_KeyPress);
             // 
             // Barcode
             // 
@@ -205,7 +199,7 @@
             // 
             this.BarcodeLabel.AutoSize = true;
             this.BarcodeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.BarcodeLabel.Location = new System.Drawing.Point(584, 70);
+            this.BarcodeLabel.Location = new System.Drawing.Point(404, 70);
             this.BarcodeLabel.Name = "BarcodeLabel";
             this.BarcodeLabel.Size = new System.Drawing.Size(79, 20);
             this.BarcodeLabel.TabIndex = 7;
@@ -247,9 +241,8 @@
             this.Controls.Add(this.DestinationBtn);
             this.Controls.Add(this.SourceBox);
             this.Controls.Add(this.DestinationBox);
-            this.Controls.Add(this.listView1);
+            this.Controls.Add(this.ProductImagesList);
             this.Controls.Add(this.NextPicBtn);
-            this.Controls.Add(this.PrevPicBtn);
             this.Controls.Add(this.InputBarcodeBox);
             this.Controls.Add(this.PictureBox);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -268,9 +261,8 @@
         #endregion
         private System.Windows.Forms.PictureBox PictureBox;
         public System.Windows.Forms.TextBox InputBarcodeBox;
-        private System.Windows.Forms.Button PrevPicBtn;
         private System.Windows.Forms.Button NextPicBtn;
-        public System.Windows.Forms.ListView listView1;
+        public System.Windows.Forms.ListView ProductImagesList;
         private System.Windows.Forms.ColumnHeader Barcode;
         private System.Windows.Forms.ColumnHeader Count;
         private System.Windows.Forms.TextBox DestinationBox;

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using BusinessLogic.Contract.Models;
 using SchwabenCode.QuickIO;
@@ -9,12 +10,13 @@ namespace BusinessLogic
     {
         public static ProductImage ConvertToModel(QuickIOFileInfo file)
         {
-            return new ProductImage(file.Name, file.FullName);
+            var filename = Path.GetFileNameWithoutExtension(file.FullName);
+            return new ProductImage(filename, file.FullName);
         }
 
         public static IReadOnlyCollection<ProductImage> ConvertToModels(IEnumerable<QuickIOFileInfo> files)
         {
-            return files.Select(x => new ProductImage(x.Name, x.FullName)).ToArray();
+            return files.Select(x => new ProductImage(Path.GetFileNameWithoutExtension(x.FullName), x.FullName)).ToArray();
         }
 
         public static QuickIOFileInfo ConvertToFile(ProductImage productImage)
