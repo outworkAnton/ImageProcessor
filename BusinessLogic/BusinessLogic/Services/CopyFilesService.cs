@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BusinessLogic.Contract.Interfaces;
-using BusinessLogic.Models;
+using BusinessLogic.Contract.Models;
 using DataAccess.Contract.Interfaces;
 
 namespace BusinessLogic.Services
@@ -17,14 +17,19 @@ namespace BusinessLogic.Services
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
+        public async Task<int> FindAllFiles()
+        {
+            return await _repository.FindAllFiles().ConfigureAwait(false);
+        }
+
         public void SetSourceDirectory(string path)
         {
             _repository.SetSourceDirectory(path);
         }
 
-        public void SetDestinationDirectory(string path)
+        public async Task SetDestinationDirectory(string path)
         {
-            _repository.SetDestinationDirectory(path);
+            await _repository.SetDestinationDirectory(path).ConfigureAwait(false);
         }
 
         public async Task<IReadOnlyCollection<ProductImage>> FindFiles(string filename)

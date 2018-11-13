@@ -10,9 +10,9 @@ namespace DataAccess.Contract.Interfaces
     public interface IDataAccessRepository
     {
         void SetSourceDirectory(string path);
-        void SetDestinationDirectory(string path);
+        Task SetDestinationDirectory(string path);
         Task CopyFile(string filename);
-        Task FindAllFiles();
+        Task<int> FindAllFiles();
         Task<IReadOnlyCollection<QuickIOFileInfo>> FindFile(string filename);
     }
 }

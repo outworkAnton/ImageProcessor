@@ -29,69 +29,74 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.PictureBox = new System.Windows.Forms.PictureBox();
+            this.InputBarcodeBox = new System.Windows.Forms.TextBox();
+            this.PrevPicBtn = new System.Windows.Forms.Button();
+            this.NextPicBtn = new System.Windows.Forms.Button();
             this.listView1 = new System.Windows.Forms.ListView();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.button3 = new System.Windows.Forms.Button();
-            this.textBox3 = new System.Windows.Forms.TextBox();
-            this.button4 = new System.Windows.Forms.Button();
+            this.Barcode = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.Count = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.DestinationBox = new System.Windows.Forms.TextBox();
+            this.DestinationBtn = new System.Windows.Forms.Button();
+            this.SourceBox = new System.Windows.Forms.TextBox();
+            this.SourceBtn = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.BarcodeCountLabel = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.ProductCountLabel = new System.Windows.Forms.Label();
-            this.Barcode = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.Count = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.BarcodeLabel = new System.Windows.Forms.Label();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.label2 = new System.Windows.Forms.Label();
+            this.FoundFilesCount = new System.Windows.Forms.Label();
+            ((System.ComponentModel.ISupportInitialize)(this.PictureBox)).BeginInit();
             this.SuspendLayout();
             // 
-            // pictureBox1
+            // PictureBox
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(368, 109);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(501, 600);
-            this.pictureBox1.TabIndex = 1;
-            this.pictureBox1.TabStop = false;
+            this.PictureBox.Location = new System.Drawing.Point(368, 109);
+            this.PictureBox.Name = "PictureBox";
+            this.PictureBox.Size = new System.Drawing.Size(501, 600);
+            this.PictureBox.TabIndex = 1;
+            this.PictureBox.TabStop = false;
             // 
-            // textBox1
+            // InputBarcodeBox
             // 
-            this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.InputBarcodeBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox1.Location = new System.Drawing.Point(368, 12);
-            this.textBox1.MinimumSize = new System.Drawing.Size(4, 30);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(502, 30);
-            this.textBox1.TabIndex = 0;
-            this.textBox1.WordWrap = false;
+            this.InputBarcodeBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.InputBarcodeBox.Location = new System.Drawing.Point(368, 12);
+            this.InputBarcodeBox.MinimumSize = new System.Drawing.Size(4, 30);
+            this.InputBarcodeBox.Name = "InputBarcodeBox";
+            this.InputBarcodeBox.Size = new System.Drawing.Size(502, 26);
+            this.InputBarcodeBox.TabIndex = 0;
+            this.InputBarcodeBox.WordWrap = false;
+            this.InputBarcodeBox.TextChanged += new System.EventHandler(this.InputBarcodeBox_TextChanged);
+            this.InputBarcodeBox.DoubleClick += new System.EventHandler(this.InputBarcodeBox_DoubleClick);
             // 
-            // button1
+            // PrevPicBtn
             // 
-            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button1.Location = new System.Drawing.Point(368, 48);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(132, 55);
-            this.button1.TabIndex = 2;
-            this.button1.Text = "<";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Visible = false;
+            this.PrevPicBtn.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.PrevPicBtn.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.PrevPicBtn.Location = new System.Drawing.Point(368, 48);
+            this.PrevPicBtn.Name = "PrevPicBtn";
+            this.PrevPicBtn.Size = new System.Drawing.Size(132, 55);
+            this.PrevPicBtn.TabIndex = 2;
+            this.PrevPicBtn.Text = "<";
+            this.PrevPicBtn.UseVisualStyleBackColor = true;
+            this.PrevPicBtn.Visible = false;
             // 
-            // button2
+            // NextPicBtn
             // 
-            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.button2.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button2.Location = new System.Drawing.Point(738, 48);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(132, 55);
-            this.button2.TabIndex = 2;
-            this.button2.Text = ">";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Visible = false;
+            this.NextPicBtn.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.NextPicBtn.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.NextPicBtn.Location = new System.Drawing.Point(738, 48);
+            this.NextPicBtn.Name = "NextPicBtn";
+            this.NextPicBtn.Size = new System.Drawing.Size(132, 55);
+            this.NextPicBtn.TabIndex = 2;
+            this.NextPicBtn.Text = ">";
+            this.NextPicBtn.UseVisualStyleBackColor = true;
+            this.NextPicBtn.Visible = false;
             // 
             // listView1
             // 
@@ -112,40 +117,53 @@
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
             // 
-            // textBox2
+            // Barcode
             // 
-            this.textBox2.Location = new System.Drawing.Point(456, 761);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(413, 20);
-            this.textBox2.TabIndex = 4;
+            this.Barcode.Text = "Артикул";
+            this.Barcode.Width = 250;
             // 
-            // button3
+            // Count
             // 
-            this.button3.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.button3.Location = new System.Drawing.Point(367, 759);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(75, 23);
-            this.button3.TabIndex = 5;
-            this.button3.Text = "Куда";
-            this.button3.UseVisualStyleBackColor = true;
+            this.Count.Text = "Количество";
+            this.Count.Width = 100;
             // 
-            // textBox3
+            // DestinationBox
             // 
-            this.textBox3.Location = new System.Drawing.Point(456, 717);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.ReadOnly = true;
-            this.textBox3.Size = new System.Drawing.Size(413, 20);
-            this.textBox3.TabIndex = 4;
+            this.DestinationBox.Location = new System.Drawing.Point(456, 761);
+            this.DestinationBox.Name = "DestinationBox";
+            this.DestinationBox.Size = new System.Drawing.Size(413, 20);
+            this.DestinationBox.TabIndex = 4;
+            this.DestinationBox.Leave += new System.EventHandler(this.DestinationBox_Leave);
             // 
-            // button4
+            // DestinationBtn
             // 
-            this.button4.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.button4.Location = new System.Drawing.Point(367, 715);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(75, 23);
-            this.button4.TabIndex = 5;
-            this.button4.Text = "Откуда";
-            this.button4.UseVisualStyleBackColor = true;
+            this.DestinationBtn.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.DestinationBtn.Location = new System.Drawing.Point(367, 759);
+            this.DestinationBtn.Name = "DestinationBtn";
+            this.DestinationBtn.Size = new System.Drawing.Size(75, 23);
+            this.DestinationBtn.TabIndex = 5;
+            this.DestinationBtn.Text = "Куда";
+            this.DestinationBtn.UseVisualStyleBackColor = true;
+            this.DestinationBtn.Click += new System.EventHandler(this.DestinationBtn_Click);
+            // 
+            // SourceBox
+            // 
+            this.SourceBox.Location = new System.Drawing.Point(456, 735);
+            this.SourceBox.Name = "SourceBox";
+            this.SourceBox.ReadOnly = true;
+            this.SourceBox.Size = new System.Drawing.Size(413, 20);
+            this.SourceBox.TabIndex = 4;
+            // 
+            // SourceBtn
+            // 
+            this.SourceBtn.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.SourceBtn.Location = new System.Drawing.Point(367, 733);
+            this.SourceBtn.Name = "SourceBtn";
+            this.SourceBtn.Size = new System.Drawing.Size(75, 23);
+            this.SourceBtn.TabIndex = 5;
+            this.SourceBtn.Text = "Откуда";
+            this.SourceBtn.UseVisualStyleBackColor = true;
+            this.SourceBtn.Click += new System.EventHandler(this.SourceBtn_Click);
             // 
             // label1
             // 
@@ -183,16 +201,6 @@
             this.ProductCountLabel.TabIndex = 6;
             this.ProductCountLabel.Text = "0";
             // 
-            // Barcode
-            // 
-            this.Barcode.Text = "Артикул";
-            this.Barcode.Width = 250;
-            // 
-            // Count
-            // 
-            this.Count.Text = "Количество";
-            this.Count.Width = 100;
-            // 
             // BarcodeLabel
             // 
             this.BarcodeLabel.AutoSize = true;
@@ -205,51 +213,78 @@
             this.BarcodeLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.BarcodeLabel.Visible = false;
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(453, 712);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(95, 13);
+            this.label2.TabIndex = 8;
+            this.label2.Text = "Найдено файлов:";
+            // 
+            // FoundFilesCount
+            // 
+            this.FoundFilesCount.AutoSize = true;
+            this.FoundFilesCount.Location = new System.Drawing.Point(554, 712);
+            this.FoundFilesCount.Name = "FoundFilesCount";
+            this.FoundFilesCount.Size = new System.Drawing.Size(13, 13);
+            this.FoundFilesCount.TabIndex = 9;
+            this.FoundFilesCount.Text = "0";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(881, 793);
+            this.Controls.Add(this.FoundFilesCount);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.BarcodeLabel);
             this.Controls.Add(this.ProductCountLabel);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.BarcodeCountLabel);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.button4);
-            this.Controls.Add(this.button3);
-            this.Controls.Add(this.textBox3);
-            this.Controls.Add(this.textBox2);
+            this.Controls.Add(this.SourceBtn);
+            this.Controls.Add(this.DestinationBtn);
+            this.Controls.Add(this.SourceBox);
+            this.Controls.Add(this.DestinationBox);
             this.Controls.Add(this.listView1);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.textBox1);
-            this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.NextPicBtn);
+            this.Controls.Add(this.PrevPicBtn);
+            this.Controls.Add(this.InputBarcodeBox);
+            this.Controls.Add(this.PictureBox);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximizeBox = false;
             this.Name = "MainForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "BulkCopier";
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.Load += new System.EventHandler(this.MainForm_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.PictureBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-        private System.Windows.Forms.PictureBox pictureBox1;
-        public System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.PictureBox PictureBox;
+        public System.Windows.Forms.TextBox InputBarcodeBox;
+        private System.Windows.Forms.Button PrevPicBtn;
+        private System.Windows.Forms.Button NextPicBtn;
         public System.Windows.Forms.ListView listView1;
         private System.Windows.Forms.ColumnHeader Barcode;
         private System.Windows.Forms.ColumnHeader Count;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.TextBox textBox3;
-        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.TextBox DestinationBox;
+        private System.Windows.Forms.Button DestinationBtn;
+        private System.Windows.Forms.TextBox SourceBox;
+        private System.Windows.Forms.Button SourceBtn;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label BarcodeCountLabel;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label ProductCountLabel;
         private System.Windows.Forms.Label BarcodeLabel;
+        private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label FoundFilesCount;
     }
 }
 

@@ -20,9 +20,16 @@ namespace DataAccess
             _sourceDirectory = new QuickIODirectoryInfo(path);
         }
 
-        public void SetDestinationDirectory(string path)
+        public async Task SetDestinationDirectory(string path)
         {
-            _destinationDirectory = new QuickIODirectoryInfo(path);
+            var destPath = path;
+            if (!await QuickIODirectory.ExistsAsync(destPath).ConfigureAwait(false))
+            {
+                var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                destPath = Path.Combine(desktopPath, path);
+                await QuickIODirectory.CreateAsync(destPath).ConfigureAwait(false);
+            }
+            _destinationDirectory = new QuickIODirectoryInfo(destPath);
         }
 
         public async Task CopyFile(string filename)
@@ -38,11 +45,12 @@ namespace DataAccess
             }
         }
 
-        public async Task FindAllFiles()
+        public async Task<int> FindAllFiles()
         {
             try
             {
                 _filesFounded = await _sourceDirectory.EnumerateFilesAsync("*.jpg", SearchOption.AllDirectories).ConfigureAwait(false);
+                return _filesFounded.Count();
             }
             catch (Exception exc)
             {
