@@ -11,7 +11,7 @@ namespace DataAccess
 {
     public class CopyFilesRepository : IDataAccessRepository
     {
-        private IEnumerable<QuickIOFileInfo> _filesFounded;
+        private IReadOnlyCollection<QuickIOFileInfo> _filesFound;
         private QuickIODirectoryInfo _sourceDirectory;
         private QuickIODirectoryInfo _destinationDirectory;
 
@@ -36,7 +36,7 @@ namespace DataAccess
         {
             try
             {
-                var item = _filesFounded.FirstOrDefault(f => f.Name == filename);
+                var item = _filesFound.FirstOrDefault(f => f.Name == filename);
                 await QuickIOFile.CopyToDirectoryAsync(item, _destinationDirectory).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -49,22 +49,26 @@ namespace DataAccess
         {
             try
             {
-                _filesFounded = await _sourceDirectory.EnumerateFilesAsync("*.jpg", SearchOption.AllDirectories).ConfigureAwait(false);
-                return _filesFounded.Count();
+                _filesFound = (await _sourceDirectory
+                    .EnumerateFilesAsync("*.jpg", SearchOption.AllDirectories)
+                    .ConfigureAwait(false)).ToArray();
             }
-            catch (Exception exc)
+            catch
             {
-                throw new IOException(exc.Message);
+                var dirExc = new DirectoryInfo(_sourceDirectory.FullName);
+                var files = dirExc.GetFiles("*.jpg", SearchOption.AllDirectories);
+                _filesFound = files.Select(f => new QuickIOFileInfo(f.FullName)).ToArray();
             }
+            return _filesFound.Count();
         }
 
         public async Task<IReadOnlyCollection<QuickIOFileInfo>> FindFile(string filename)
         {
-            if (!_filesFounded.Any())
+            if (!_filesFound.Any())
             {
                 await FindAllFiles().ConfigureAwait(false);
             }
-            return _filesFounded.Where(f => f.Name.StartsWith(filename)).ToArray();
+            return _filesFound.Where(f => f.Name.StartsWith(filename)).ToArray();
         }
     }
 }
