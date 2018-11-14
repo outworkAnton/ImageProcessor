@@ -47,6 +47,7 @@
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.label2 = new System.Windows.Forms.Label();
             this.FoundFilesCount = new System.Windows.Forms.Label();
+            this.ResetOrder = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.PictureBox)).BeginInit();
             this.SuspendLayout();
             // 
@@ -70,6 +71,7 @@
             this.InputBarcodeBox.Name = "InputBarcodeBox";
             this.InputBarcodeBox.Size = new System.Drawing.Size(502, 26);
             this.InputBarcodeBox.TabIndex = 0;
+            this.InputBarcodeBox.Visible = false;
             this.InputBarcodeBox.WordWrap = false;
             this.InputBarcodeBox.TextChanged += new System.EventHandler(this.InputBarcodeBox_TextChanged);
             this.InputBarcodeBox.DoubleClick += new System.EventHandler(this.InputBarcodeBox_DoubleClick);
@@ -98,18 +100,17 @@
             this.ProductImagesList.FullRowSelect = true;
             this.ProductImagesList.GridLines = true;
             this.ProductImagesList.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-            this.ProductImagesList.LabelEdit = true;
             this.ProductImagesList.Location = new System.Drawing.Point(12, 12);
             this.ProductImagesList.MultiSelect = false;
             this.ProductImagesList.Name = "ProductImagesList";
+            this.ProductImagesList.ShowGroups = false;
             this.ProductImagesList.ShowItemToolTips = true;
             this.ProductImagesList.Size = new System.Drawing.Size(350, 662);
             this.ProductImagesList.TabIndex = 3;
             this.ProductImagesList.UseCompatibleStateImageBehavior = false;
             this.ProductImagesList.View = System.Windows.Forms.View.Details;
-            this.ProductImagesList.DoubleClick += new System.EventHandler(this.ProductImagesList_DoubleClick);
+            this.ProductImagesList.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.ProductImagesList_ItemSelectionChanged);
             this.ProductImagesList.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ProductImagesList_KeyDown);
-            this.ProductImagesList.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ProductImagesList_KeyPress);
             // 
             // Barcode
             // 
@@ -125,7 +126,7 @@
             // 
             this.DestinationBox.Location = new System.Drawing.Point(456, 680);
             this.DestinationBox.Name = "DestinationBox";
-            this.DestinationBox.Size = new System.Drawing.Size(413, 20);
+            this.DestinationBox.Size = new System.Drawing.Size(321, 20);
             this.DestinationBox.TabIndex = 4;
             this.DestinationBox.Leave += new System.EventHandler(this.DestinationBox_Leave);
             // 
@@ -225,11 +226,22 @@
             this.FoundFilesCount.TabIndex = 9;
             this.FoundFilesCount.Text = "0";
             // 
+            // ResetOrder
+            // 
+            this.ResetOrder.Location = new System.Drawing.Point(783, 678);
+            this.ResetOrder.Name = "ResetOrder";
+            this.ResetOrder.Size = new System.Drawing.Size(86, 23);
+            this.ResetOrder.TabIndex = 10;
+            this.ResetOrder.Text = "Новый заказ";
+            this.ResetOrder.UseVisualStyleBackColor = true;
+            this.ResetOrder.Click += new System.EventHandler(this.ResetOrder_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(881, 710);
+            this.Controls.Add(this.ResetOrder);
             this.Controls.Add(this.FoundFilesCount);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.BarcodeLabel);
@@ -251,6 +263,7 @@
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "BulkCopier";
+            this.Activated += new System.EventHandler(this.MainForm_Activated);
             this.Load += new System.EventHandler(this.MainForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.PictureBox)).EndInit();
             this.ResumeLayout(false);
@@ -277,6 +290,7 @@
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label FoundFilesCount;
+        private System.Windows.Forms.Button ResetOrder;
     }
 }
 

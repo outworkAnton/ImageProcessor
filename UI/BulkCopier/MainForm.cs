@@ -14,6 +14,7 @@ namespace BulkCopier
         private readonly ICopyFilesService _service;
         private List<ProductImage> _foundImages = new List<ProductImage>();
         private IEnumerator<ProductImage> _foundImagesEnumerator;
+        private List<ProductImage> _processedImages = new List<ProductImage>();
 
         public MainForm(ICopyFilesService service)
         {
@@ -40,7 +41,7 @@ namespace BulkCopier
             }
             _foundImages.Clear();
             _foundImagesEnumerator = null;
-            _foundImages = (await _service.FindFiles(InputBarcodeBox.Text).ConfigureAwait(false)).ToList();
+            _foundImages = (await _service.FindFiles(InputBarcodeBox.Text)).ToList();
             
             if (_foundImages.Any())
             {
@@ -82,11 +83,14 @@ namespace BulkCopier
         {
             if (!string.IsNullOrWhiteSpace(DestinationBox.Text))
             {
-                await _service.SetDestinationDirectory(DestinationBox.Text).ConfigureAwait(false);
+                await _service.SetDestinationDirectory(DestinationBox.Text);
                 DestinationBox.BackColor = Color.LimeGreen;
+                InputBarcodeBox.Visible = _service.IsSourceDirectorySet();
+                DestinationBox.ReadOnly = true;
             }
             else
             {
+                DestinationBox.ReadOnly = false;
                 DestinationBox.BackColor = SystemColors.Control;
             }
         }
@@ -97,11 +101,14 @@ namespace BulkCopier
             if (folderBrowserDialog1.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog1.SelectedPath))
             {
                 DestinationBox.Text = folderBrowserDialog1.SelectedPath;
-                await _service.SetDestinationDirectory(DestinationBox.Text).ConfigureAwait(false);
+                await _service.SetDestinationDirectory(DestinationBox.Text);
                 DestinationBox.BackColor = Color.LimeGreen;
+                InputBarcodeBox.Visible = _service.IsSourceDirectorySet();
+                DestinationBox.ReadOnly = true;
             }
             else
             {
+                DestinationBox.ReadOnly = false;
                 DestinationBox.BackColor = SystemColors.Control;
             }
         }
@@ -120,6 +127,7 @@ namespace BulkCopier
                 _service.SetSourceDirectory(sourcePath);
                 FoundFilesCount.Text = (await _service.FindAllFiles()).ToString();
                 SourceBox.BackColor = Color.LimeGreen;
+                InputBarcodeBox.Visible = _service.IsDestinationDirectorySet();
             }
         }
 
@@ -142,34 +150,83 @@ namespace BulkCopier
             InputBarcodeBox.Focus();
         }
 
-        private void InputBarcodeBox_Leave(object sender, EventArgs e)
+        private async void InputBarcodeBox_Leave(object sender, EventArgs e)
         {
             if (NextPicBtn.Focused || string.IsNullOrWhiteSpace(InputBarcodeBox.Text))
             {
                 return;
             }
+            var newFilePath = await _service.CopyFile(_foundImagesEnumerator.Current.Id);
+            _processedImages.Insert(0, new ProductImage(_foundImagesEnumerator.Current.Id, newFilePath, 1, true));
             ProductImagesList.Items.Insert(0, new ListViewItem(new[] { _foundImagesEnumerator.Current.Id, "" }));
-        }
-
-        private void ProductImagesList_DoubleClick(object sender, EventArgs e)
-        {
-
-        }
-
-        private void ProductImagesList_KeyPress(object sender, KeyPressEventArgs e)
-        {
-
+            InputBarcodeBox.Clear();
         }
 
         private void ProductImagesList_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode > Keys.D0 || e.KeyCode < Keys.D9)
+            if (e.KeyCode >= Keys.D0 && e.KeyCode <= Keys.D9)
             {
-                if (e.KeyCode > Keys.NumPad0 || e.KeyCode < Keys.NumPad9)
+                ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[1].Text += ((char)e.KeyValue).ToString();
+            }
+            else if (e.KeyCode >= Keys.NumPad0 && e.KeyCode <= Keys.NumPad9)
+            {
+                ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[1].Text += ((char)(e.KeyValue - 48)).ToString();
+            }
+            if (e.KeyCode == Keys.Back)
+            {
+                var currentValue = ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[1].Text;
+                if (currentValue.Length > 0)
                 {
-                    ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[1].Text = ((char)e.KeyValue).ToString();
+                    ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[1].Text = currentValue.Remove(currentValue.Length - 1, 1);
+                }
+                else
+                {
+                    ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[1].Text = string.Empty;
                 }
             }
+        }
+
+        private void ProductImagesList_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+        {
+            if (!e.IsSelected)
+            {
+                if (new[] { "1", "0" }.Contains(ProductImagesList.Items[e.ItemIndex].SubItems[1].Text))
+                {
+                    ProductImagesList.Items[e.ItemIndex].SubItems[1].Text = string.Empty;
+                }
+            }
+            var imagePath =_processedImages.Where(img => img.Id == e.Item.SubItems[0].Text).First().Path;
+            PictureBox.LoadAsync(imagePath);
+        }
+
+        private void ResetOrder_Click(object sender, EventArgs e)
+        {
+            _foundImages.Clear();
+            _foundImagesEnumerator = null;
+            DestinationBox.ReadOnly = false;
+            DestinationBox.Clear();
+            DestinationBox.BackColor = SystemColors.Control;
+            InputBarcodeBox.Visible = false;
+            if (PictureBox.Image != null)
+            {
+                PictureBox.Image.Dispose();
+                PictureBox.Image = null;
+            }
+            BarcodeLabel.Visible = false;
+            NextPicBtn.Visible = false;
+            ProductImagesList.Items.Clear();
+            BarcodeCountLabel.Text = "0";
+            ProductCountLabel.Text = "0";
+            _processedImages.Clear();
+            _service.SetDestinationDirectory(null);
+        }
+
+        private void MainForm_Activated(object sender, EventArgs e)
+        {
+            if (InputBarcodeBox.Visible)
+            {
+                InputBarcodeBox.Focus();
+            } 
         }
     }
 }

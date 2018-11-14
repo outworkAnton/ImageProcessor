@@ -39,9 +39,19 @@ namespace BusinessLogic.Services
                 .ToArray();
         }
 
-        public async Task CopyFile(string id)
+        public async Task<string> CopyFile(string id)
         {
-            await _repository.CopyFile(id).ConfigureAwait(false);
+            return await _repository.CopyFile(id).ConfigureAwait(false);
+        }
+
+        public bool IsSourceDirectorySet()
+        {
+            return _repository.IsSourceDirectorySet();
+        }
+
+        public bool IsDestinationDirectorySet()
+        {
+            return _repository.IsDestinationDirectorySet();
         }
     }
 }

@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace DataAccess
@@ -22,6 +21,11 @@ namespace DataAccess
 
         public async Task SetDestinationDirectory(string path)
         {
+            if (path == null)
+            {
+                _destinationDirectory = null;
+                return;
+            }
             var destPath = path;
             if (!await QuickIODirectory.ExistsAsync(destPath).ConfigureAwait(false))
             {
@@ -32,12 +36,19 @@ namespace DataAccess
             _destinationDirectory = new QuickIODirectoryInfo(destPath);
         }
 
-        public async Task CopyFile(string filename)
+        public async Task<string> CopyFile(string filename)
         {
             try
             {
-                var item = _filesFound.FirstOrDefault(f => f.Name == filename);
+                var item = _filesFound.FirstOrDefault(f => f.Name == filename + ".jpg");
                 await QuickIOFile.CopyToDirectoryAsync(item, _destinationDirectory).ConfigureAwait(false);
+                var newFilePath = Path.Combine(_destinationDirectory.FullName, Path.GetFileName(item.FullName));
+                if (await QuickIOFile.ExistsAsync(newFilePath).ConfigureAwait(false))
+                {
+                    return newFilePath;
+                }
+
+                throw new IOException($"File {filename} not copied");
             }
             catch (Exception ex)
             {
@@ -164,5 +175,9 @@ namespace DataAccess
             }
             return _filesFound.Where(f => f.Name.StartsWith(filename, StringComparison.OrdinalIgnoreCase)).ToArray();
         }
+
+        public bool IsSourceDirectorySet() => _sourceDirectory != null;
+
+        public bool IsDestinationDirectorySet() => _destinationDirectory != null;
     }
 }
