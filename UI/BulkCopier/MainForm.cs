@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -290,6 +291,11 @@ namespace BulkCopier
 
         private void ProductImagesList_Leave(object sender, EventArgs e)
         {
+            if (PictureBox.Focused)
+            {
+                return;
+            }
+
             if (PictureBox.Image != null)
             {
                 PictureBox.Image.Dispose();
@@ -310,6 +316,18 @@ namespace BulkCopier
                 var imagePath = _processedImages.Where(img => img.Id == selectedItemKey.Text).First().Path;
                 PictureBox.LoadAsync(imagePath); 
             }
+        }
+
+        private void PictureBox_Click(object sender, EventArgs e)
+        {
+            var filePath = PictureBox.ImageLocation;
+            ProcessStartInfo Info = new ProcessStartInfo()
+            {
+                FileName = "mspaint.exe",
+                WindowStyle = ProcessWindowStyle.Maximized,
+                Arguments = filePath
+            };
+            Process.Start(Info);
         }
     }
 }

@@ -53,12 +53,14 @@
             // 
             // PictureBox
             // 
+            this.PictureBox.Cursor = System.Windows.Forms.Cursors.Hand;
             this.PictureBox.Location = new System.Drawing.Point(368, 109);
             this.PictureBox.Name = "PictureBox";
             this.PictureBox.Size = new System.Drawing.Size(501, 519);
             this.PictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.PictureBox.TabIndex = 1;
             this.PictureBox.TabStop = false;
+            this.PictureBox.Click += new System.EventHandler(this.PictureBox_Click);
             // 
             // InputBarcodeBox
             // 
