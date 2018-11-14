@@ -34,8 +34,8 @@ namespace BusinessLogic.Services
 
         public async Task<IReadOnlyCollection<ProductImage>> FindFiles(string filename)
         {
-            return (await _repository.FindFile(filename).ConfigureAwait(false))
-                .Select(FileToModelConverter.ConvertToModel)
+            return (await _repository.FindFile(filename).ConfigureAwait(false))?
+                .Select(FileToModelConverter.ConvertToModel)?
                 .ToArray();
         }
 

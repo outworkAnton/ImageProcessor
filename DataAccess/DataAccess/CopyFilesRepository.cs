@@ -16,6 +16,11 @@ namespace DataAccess
 
         public void SetSourceDirectory(string path)
         {
+            if (path == null)
+            {
+                _sourceDirectory = null;
+                return;
+            }
             _sourceDirectory = new QuickIODirectoryInfo(path);
         }
 
@@ -41,14 +46,20 @@ namespace DataAccess
             try
             {
                 var item = _filesFound.FirstOrDefault(f => f.Name == filename + ".jpg");
-                await QuickIOFile.CopyToDirectoryAsync(item, _destinationDirectory).ConfigureAwait(false);
                 var newFilePath = Path.Combine(_destinationDirectory.FullName, Path.GetFileName(item.FullName));
+                if (await QuickIOFile.ExistsAsync(newFilePath).ConfigureAwait(false))
+                {
+                    throw new IOException($"Файл {filename} уже существует");
+                }
+
+                await QuickIOFile.CopyToDirectoryAsync(item, _destinationDirectory).ConfigureAwait(false);
+
                 if (await QuickIOFile.ExistsAsync(newFilePath).ConfigureAwait(false))
                 {
                     return newFilePath;
                 }
 
-                throw new IOException($"File {filename} not copied");
+                throw new IOException($"Файл {filename} не скопирован");
             }
             catch (Exception ex)
             {
@@ -172,6 +183,10 @@ namespace DataAccess
             if (!_filesFound.Any())
             {
                 await FindAllFiles().ConfigureAwait(false);
+            }
+            if (!await _sourceDirectory.SafeExistsAsync().ConfigureAwait(false))
+            {
+                return null;
             }
             return _filesFound.Where(f => f.Name.StartsWith(filename, StringComparison.OrdinalIgnoreCase)).ToArray();
         }

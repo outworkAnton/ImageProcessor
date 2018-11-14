@@ -110,7 +110,9 @@
             this.ProductImagesList.UseCompatibleStateImageBehavior = false;
             this.ProductImagesList.View = System.Windows.Forms.View.Details;
             this.ProductImagesList.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.ProductImagesList_ItemSelectionChanged);
+            this.ProductImagesList.Enter += new System.EventHandler(this.ProductImagesList_Enter);
             this.ProductImagesList.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ProductImagesList_KeyDown);
+            this.ProductImagesList.Leave += new System.EventHandler(this.ProductImagesList_Leave);
             // 
             // Barcode
             // 
@@ -264,6 +266,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "BulkCopier";
             this.Activated += new System.EventHandler(this.MainForm_Activated);
+            this.Deactivate += new System.EventHandler(this.MainForm_Deactivate);
             this.Load += new System.EventHandler(this.MainForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.PictureBox)).EndInit();
             this.ResumeLayout(false);
