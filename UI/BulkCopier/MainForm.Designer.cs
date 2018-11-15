@@ -132,7 +132,7 @@
             this.DestinationBox.Name = "DestinationBox";
             this.DestinationBox.Size = new System.Drawing.Size(321, 20);
             this.DestinationBox.TabIndex = 4;
-            this.DestinationBox.Leave += new System.EventHandler(this.DestinationBox_Leave);
+            this.DestinationBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.DestinationBox_KeyDown);
             // 
             // DestinationBtn
             // 
@@ -263,6 +263,7 @@
             this.Controls.Add(this.PictureBox);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.KeyPreview = true;
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -270,6 +271,7 @@
             this.Activated += new System.EventHandler(this.MainForm_Activated);
             this.Deactivate += new System.EventHandler(this.MainForm_Deactivate);
             this.Load += new System.EventHandler(this.MainForm_Load);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyDown);
             ((System.ComponentModel.ISupportInitialize)(this.PictureBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

@@ -16,40 +16,64 @@ namespace DataAccess
 
         public void SetSourceDirectory(string path)
         {
-            if (path == null)
+            try
             {
-                _sourceDirectory = null;
-                return;
+                if (path == null)
+                {
+                    _sourceDirectory = null;
+                    return;
+                }
+                _sourceDirectory = new QuickIODirectoryInfo(path);
             }
-            _sourceDirectory = new QuickIODirectoryInfo(path);
+            catch
+            {
+                throw new DirectoryNotFoundException("Папка с исходными изображениями не найдена");
+            }
         }
 
         public async Task SetDestinationDirectory(string path)
         {
-            if (path == null)
+            try
             {
-                _destinationDirectory = null;
-                return;
+                if (path == null)
+                {
+                    _destinationDirectory = null;
+                    return;
+                }
+                var destPath = path;
+                if (!await QuickIODirectory.ExistsAsync(destPath).ConfigureAwait(false))
+                {
+                    var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                    destPath = Path.Combine(desktopPath, path);
+                    await QuickIODirectory.CreateAsync(destPath).ConfigureAwait(false);
+                }
+                _destinationDirectory = new QuickIODirectoryInfo(destPath);
             }
-            var destPath = path;
-            if (!await QuickIODirectory.ExistsAsync(destPath).ConfigureAwait(false))
+            catch
             {
-                var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                destPath = Path.Combine(desktopPath, path);
-                await QuickIODirectory.CreateAsync(destPath).ConfigureAwait(false);
+                throw new DirectoryNotFoundException("Целевая папка не создана или не доступна");
             }
-            _destinationDirectory = new QuickIODirectoryInfo(destPath);
         }
 
         public async Task<string> CopyFile(string filename)
         {
             try
             {
+                if (!await QuickIODirectory.ExistsAsync(_sourceDirectory).ConfigureAwait(false))
+                {
+                    throw new DirectoryNotFoundException("Папка с исходными изображениями не доступна");
+                }
+
+                if (!await QuickIODirectory.ExistsAsync(_destinationDirectory).ConfigureAwait(false))
+                {
+                    throw new DirectoryNotFoundException("Целевая папка не доступна");
+                }
+
                 var item = _filesFound.FirstOrDefault(f => f.Name == filename + ".jpg");
                 var newFilePath = Path.Combine(_destinationDirectory.FullName, Path.GetFileName(item.FullName));
                 if (await QuickIOFile.ExistsAsync(newFilePath).ConfigureAwait(false))
                 {
-                    throw new IOException($"Файл {filename} уже существует");
+                    throw new ArgumentException($"Файл {filename} уже существует");
                 }
 
                 await QuickIOFile.CopyToDirectoryAsync(item, _destinationDirectory).ConfigureAwait(false);
@@ -59,11 +83,19 @@ namespace DataAccess
                     return newFilePath;
                 }
 
-                throw new IOException($"Файл {filename} не скопирован");
+                throw new FileNotFoundException($"Файл {filename} не скопирован");
             }
-            catch (Exception ex)
+            catch (ArgumentException fae)
             {
-                throw new IOException(ex.Message);
+                throw new ArgumentException(fae.Message);
+            }
+            catch (FileNotFoundException fnf)
+            {
+                throw new FileNotFoundException(fnf.Message);
+            }
+            catch (DirectoryNotFoundException dnf)
+            {
+                throw new DirectoryNotFoundException(dnf.Message);
             }
         }
 
@@ -79,9 +111,16 @@ namespace DataAccess
             }
             catch
             {
-                var files = FindAccessableFiles(_sourceDirectory.FullName, "*.jpg", true)
-                    .Select(file => new QuickIOFileInfo(file)).ToList();
-                _filesFound.AddRange(files);
+                try
+                {
+                    var files = FindAccessableFiles(_sourceDirectory.FullName, "*.jpg", true)
+                .Select(file => new QuickIOFileInfo(file)).ToList();
+                    _filesFound.AddRange(files);
+                }
+                catch
+                {
+                    throw new IOException("Возникла ошибка при попытке получить список файлов из исходной папки");
+                }
             }
             return _filesFound.Count();
         }
@@ -180,15 +219,22 @@ namespace DataAccess
 
         public async Task<IReadOnlyCollection<QuickIOFileInfo>> FindFile(string filename)
         {
-            if (!_filesFound.Any())
+            try
             {
-                await FindAllFiles().ConfigureAwait(false);
+                if (!_filesFound.Any())
+                {
+                    await FindAllFiles().ConfigureAwait(false);
+                }
+                if (!await _sourceDirectory.SafeExistsAsync().ConfigureAwait(false))
+                {
+                    return null;
+                }
+                return _filesFound.Where(f => f.Name.StartsWith(filename, StringComparison.OrdinalIgnoreCase)).ToArray();
             }
-            if (!await _sourceDirectory.SafeExistsAsync().ConfigureAwait(false))
+            catch
             {
-                return null;
+                throw new FileNotFoundException("Возникла ошибка при поиске файла");
             }
-            return _filesFound.Where(f => f.Name.StartsWith(filename, StringComparison.OrdinalIgnoreCase)).ToArray();
         }
 
         public bool IsSourceDirectorySet() => _sourceDirectory != null;

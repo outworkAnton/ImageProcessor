@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Autofac;
 using BusinessLogic.DI;
-using DataAccess;
 using DataAccess.DI;
 
 namespace BulkCopier

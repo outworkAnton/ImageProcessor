@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BusinessLogic.Contract.Interfaces;
@@ -19,29 +20,76 @@ namespace BusinessLogic.Services
 
         public async Task<int> FindAllFiles()
         {
-            return await _repository.FindAllFiles().ConfigureAwait(false);
+            try
+            {
+                return await _repository.FindAllFiles().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                throw new IOException(ex.Message);
+            }
         }
 
         public void SetSourceDirectory(string path)
         {
-            _repository.SetSourceDirectory(path);
+            try
+            {
+                _repository.SetSourceDirectory(path);
+            }
+            catch (Exception ex)
+            {
+                throw new DirectoryNotFoundException(ex.Message);
+            }
         }
 
         public async Task SetDestinationDirectory(string path)
         {
-            await _repository.SetDestinationDirectory(path).ConfigureAwait(false);
+            try
+            {
+                await _repository.SetDestinationDirectory(path).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                throw new DirectoryNotFoundException(ex.Message);
+            }
         }
 
         public async Task<IReadOnlyCollection<ProductImage>> FindFiles(string filename)
         {
-            return (await _repository.FindFile(filename).ConfigureAwait(false))?
-                .Select(FileToModelConverter.ConvertToModel)?
-                .ToArray();
+            try
+            {
+                return (await _repository.FindFile(filename).ConfigureAwait(false))?
+                    .Select(FileToModelConverter.ConvertToModel)?
+                    .ToArray();
+            }
+            catch (Exception ex)
+            {
+                throw new FileNotFoundException(ex.Message);
+            }
         }
 
         public async Task<string> CopyFile(string id)
         {
-            return await _repository.CopyFile(id).ConfigureAwait(false);
+            try
+            {
+                return await _repository.CopyFile(id).ConfigureAwait(false);
+            }
+            catch (FileNotFoundException fnf)
+            {
+                throw new FileNotFoundException(fnf.Message);
+            }
+            catch (DirectoryNotFoundException dnf)
+            {
+                throw new DirectoryNotFoundException(dnf.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new IOException(ex.Message);
+            }
         }
 
         public bool IsSourceDirectorySet()

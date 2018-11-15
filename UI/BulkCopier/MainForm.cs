@@ -40,6 +40,11 @@ namespace BulkCopier
 
         private void InputBarcodeBox_DoubleClick(object sender, EventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(Clipboard.GetText()))
+            {
+                MessageBox.Show("Буфер обмена пуст. Скопируйте значение еще раз");
+                return;
+            }
             InputBarcodeBox.Text = Clipboard.GetText();
         }
 
@@ -53,7 +58,6 @@ namespace BulkCopier
                     PictureBox.Image.Dispose();
                     PictureBox.Image = null;
                 }
-                BarcodeLabel.Text = "Артикул";
                 BarcodeLabel.Visible = false;
                 NextPicBtn.Visible = false;
                 return;
@@ -91,6 +95,8 @@ namespace BulkCopier
             catch (Exception ex)
             {
                 _service.SetSourceDirectory(null);
+                Properties.Settings.Default.SourcePath = string.Empty;
+                Properties.Settings.Default.Save();
                 SourceBox.Clear();
                 SourceBox.BackColor = SystemColors.Control;
                 InputBarcodeBox.Clear();
@@ -103,45 +109,48 @@ namespace BulkCopier
 
         private async void MainForm_Load(object sender, EventArgs e)
         {
-            var sourcePath = Properties.Settings.Default.SourcePath;
-            if (!string.IsNullOrWhiteSpace(sourcePath) && Directory.Exists(sourcePath))
+            try
             {
-                _service.SetSourceDirectory(sourcePath);
-                SourceBox.Text = sourcePath;
-                FoundFilesCount.Text = (await _service.FindAllFiles()).ToString();
-                SourceBox.BackColor = Color.LimeGreen;
+                var sourcePath = Properties.Settings.Default.SourcePath;
+                if (!string.IsNullOrWhiteSpace(sourcePath) && Directory.Exists(sourcePath))
+                {
+                    _service.SetSourceDirectory(sourcePath);
+                    SourceBox.Text = sourcePath;
+                    FoundFilesCount.Text = (await _service.FindAllFiles()).ToString();
+                    SourceBox.BackColor = Color.LimeGreen;
+                }
             }
-        }
-
-        private async void DestinationBox_Leave(object sender, EventArgs e)
-        {
-            if (!string.IsNullOrWhiteSpace(DestinationBox.Text))
+            catch (Exception ex)
             {
-                await _service.SetDestinationDirectory(DestinationBox.Text);
-                DestinationBox.BackColor = Color.LimeGreen;
-                InputBarcodeBox.Visible = _service.IsSourceDirectorySet();
-                DestinationBox.ReadOnly = true;
-            }
-            else
-            {
-                DestinationBox.ReadOnly = false;
-                DestinationBox.BackColor = SystemColors.Control;
+                MessageBox.Show("Возникла ошибка при доступе к папке с исходными изображениями\n" + ex.Message + "После завершения работы запустите приложение заново");
+                Properties.Settings.Default.SourcePath = string.Empty;
+                Properties.Settings.Default.Save();
+                Application.Exit();
             }
         }
 
         private async void DestinationBtn_Click(object sender, EventArgs e)
         {
             folderBrowserDialog1.RootFolder = Environment.SpecialFolder.DesktopDirectory;
-            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog1.SelectedPath))
+            try
             {
-                DestinationBox.Text = folderBrowserDialog1.SelectedPath;
-                await _service.SetDestinationDirectory(DestinationBox.Text);
-                DestinationBox.BackColor = Color.LimeGreen;
-                InputBarcodeBox.Visible = _service.IsSourceDirectorySet();
-                DestinationBox.ReadOnly = true;
+                if (folderBrowserDialog1.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog1.SelectedPath))
+                {
+                    DestinationBox.Text = folderBrowserDialog1.SelectedPath;
+                    await _service.SetDestinationDirectory(DestinationBox.Text);
+                    DestinationBox.BackColor = Color.LimeGreen;
+                    InputBarcodeBox.Visible = _service.IsSourceDirectorySet();
+                    DestinationBox.ReadOnly = true;
+                }
+                else
+                {
+                    DestinationBox.ReadOnly = false;
+                    DestinationBox.BackColor = SystemColors.Control;
+                }
             }
-            else
+            catch (Exception ex)
             {
+                MessageBox.Show(ex.Message);
                 DestinationBox.ReadOnly = false;
                 DestinationBox.BackColor = SystemColors.Control;
             }
@@ -150,38 +159,53 @@ namespace BulkCopier
         private async void SourceBtn_Click(object sender, EventArgs e)
         {
             folderBrowserDialog1.RootFolder = Environment.SpecialFolder.MyComputer;
-            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog1.SelectedPath))
+            try
             {
+                if (folderBrowserDialog1.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog1.SelectedPath))
+                {
+                    FoundFilesCount.Text = 0.ToString();
+                    SourceBox.BackColor = SystemColors.Control;
+                    var sourcePath = folderBrowserDialog1.SelectedPath;
+                    Properties.Settings.Default.SourcePath = sourcePath;
+                    Properties.Settings.Default.Save();
+                    SourceBox.Text = sourcePath;
+                    _service.SetSourceDirectory(sourcePath);
+                    FoundFilesCount.Text = (await _service.FindAllFiles()).ToString();
+                    SourceBox.BackColor = Color.LimeGreen;
+                    InputBarcodeBox.Visible = _service.IsDestinationDirectorySet();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
                 FoundFilesCount.Text = 0.ToString();
                 SourceBox.BackColor = SystemColors.Control;
-                var sourcePath = folderBrowserDialog1.SelectedPath;
-                Properties.Settings.Default.SourcePath = sourcePath;
+                Properties.Settings.Default.SourcePath = string.Empty;
                 Properties.Settings.Default.Save();
-                SourceBox.Text = sourcePath;
-                _service.SetSourceDirectory(sourcePath);
-                FoundFilesCount.Text = (await _service.FindAllFiles()).ToString();
-                SourceBox.BackColor = Color.LimeGreen;
-                InputBarcodeBox.Visible = _service.IsDestinationDirectorySet();
             }
         }
 
         private void NextPicBtn_Click(object sender, EventArgs e)
         {
-            if (!_foundImagesEnumerator.MoveNext())
+            try
             {
-                _foundImagesEnumerator.Reset();
-                _foundImagesEnumerator.MoveNext();
-            }
+                if (!_foundImagesEnumerator.MoveNext())
+                {
+                    _foundImagesEnumerator.Reset();
+                    _foundImagesEnumerator.MoveNext();
+                }
 
-            if (PictureBox.Image != null)
+                PictureBox.LoadAsync(_foundImagesEnumerator.Current.Path);
+                BarcodeLabel.Text = _foundImagesEnumerator.Current.Id;
+                InputBarcodeBox.Focus();
+            }
+            catch
             {
-                PictureBox.Image.Dispose();
                 PictureBox.Image = null;
+                PictureBox.LoadAsync(_foundImagesEnumerator.Current.Path);
+                BarcodeLabel.Text = _foundImagesEnumerator.Current.Id;
+                InputBarcodeBox.Focus();
             }
-
-            PictureBox.LoadAsync(_foundImagesEnumerator.Current.Path);
-            BarcodeLabel.Text = _foundImagesEnumerator.Current.Id;
-            InputBarcodeBox.Focus();
         }
 
         private async void InputBarcodeBox_Leave(object sender, EventArgs e)
@@ -195,90 +219,190 @@ namespace BulkCopier
 
         private async Task ProcessProductImage()
         {
+            var newFilePath = string.Empty;
             try
             {
                 if (_foundImagesEnumerator == null || string.IsNullOrWhiteSpace(InputBarcodeBox.Text))
                 {
                     return;
                 }
-                var newFilePath = await _service.CopyFile(_foundImagesEnumerator.Current.Id);
-                _processedImages.Insert(0, new ProductImage(_foundImagesEnumerator.Current.Id, newFilePath, 1, true));
+                newFilePath = await _service.CopyFile(_foundImagesEnumerator.Current.Id);
+                _processedImages.Insert(0, new ProductImage(_foundImagesEnumerator.Current.Id, newFilePath));
                 ProductImagesList.Items.Insert(0, new ListViewItem(new[] { _foundImagesEnumerator.Current.Id, "" }));
+            }
+            catch (ArgumentException a)
+            {
+                MessageBox.Show(a.Message);
+            }
+            catch (FileNotFoundException fnf)
+            {
+                MessageBox.Show("Не удалось скопировать файл в целевую папку\n" + fnf.Message);
+                _processedImages.Remove(_processedImages.FirstOrDefault(img => img.Id == _foundImagesEnumerator.Current.Id));
+                ProductImagesList.Items.Find(_foundImagesEnumerator.Current.Id, false).FirstOrDefault().Remove();
+            }
+            catch (IOException io)
+            {
+                MessageBox.Show("Ошибка при обработке файла изображения\n" + io.Message);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(_foundImagesEnumerator.Current.Id))
+                    {
+                        if (!_processedImages.Any(img => img.Id == _foundImagesEnumerator.Current.Id) && !string.IsNullOrWhiteSpace(newFilePath))
+                        {
+                            _processedImages.Insert(0, new ProductImage(_foundImagesEnumerator.Current.Id, newFilePath));
+                        }
+                        if (!ProductImagesList.Items.Find(_foundImagesEnumerator.Current.Id, false).Any())
+                        {
+                            ProductImagesList.Items.Insert(0, new ListViewItem(new[] { _foundImagesEnumerator.Current.Id, "" }));
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception();
+                    }
+                }
+                catch
+                {
+                    MessageBox.Show("Неизвестная ошибка в работе приложения\n" + ex.Message);
+                }
+                
             }
             InputBarcodeBox.Clear();
         }
 
         private void ProductImagesList_KeyDown(object sender, KeyEventArgs e)
         {
-            var selectedItemValue = ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[1];
-            if (e.KeyCode >= Keys.D0 && e.KeyCode <= Keys.D9)
+            try
             {
-                selectedItemValue.Text += ((char)e.KeyValue).ToString();
-            }
-            else if (e.KeyCode >= Keys.NumPad0 && e.KeyCode <= Keys.NumPad9)
-            {
-                selectedItemValue.Text += ((char)(e.KeyValue - 48)).ToString();
-            }
-            else if (e.KeyCode == Keys.Back)
-            {
-                var currentValue = selectedItemValue.Text;
-                if (currentValue.Length > 0 && !new[] { "0", "1" }.Contains(currentValue))
+                if (ProductImagesList.SelectedIndices.Count > 0)
                 {
-                    selectedItemValue.Text = currentValue.Remove(currentValue.Length - 1, 1);
-                }
-                else
-                {
-                    selectedItemValue.Text = string.Empty;
-                }
-            }
-            else 
-            {
-                return;
-            }
+                    var selectedItemKey = ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[0];
+                    var selectedItemValue = ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[1];
+                    var pressedKey = string.Empty;
 
-            var count = 1;
-            if (int.TryParse(selectedItemValue.Text, out var cnt))
-            {
-                if (!new[] { 0, 1 }.Contains(cnt))
-                {
-                    count = cnt;
+                    if (e.KeyCode >= Keys.D0 && e.KeyCode <= Keys.D9)
+                    {
+                        pressedKey = ((char)e.KeyValue).ToString();
+                    }
+                    else if (e.KeyCode >= Keys.NumPad0 && e.KeyCode <= Keys.NumPad9)
+                    {
+                        pressedKey = ((char)(e.KeyValue - 48)).ToString();
+                    }
+                    else if (e.KeyCode == Keys.Back)
+                    {
+                        var currentValue = selectedItemValue.Text;
+                        if (currentValue.Length > 0)
+                        {
+                            selectedItemValue.Text = pressedKey;
+                            pressedKey = currentValue.Remove(currentValue.Length - 1, 1);
+                        }
+                    } else if (e.KeyCode == Keys.Delete)
+                    {
+                        _processedImages.Remove(_processedImages.FirstOrDefault(img => img.Id == selectedItemKey.Text));
+                        ProductImagesList.Items.Remove(ProductImagesList.Items[ProductImagesList.SelectedIndices[0]]);
+                        RecalculateProcessedImagesCollection();
+                        return;
+                    }
+                    else
+                    {
+                        return;
+                    }
+
+                    selectedItemValue.Text += pressedKey;
+
+                    var count = 1;
+                    if (int.TryParse(selectedItemValue.Text, out var cnt))
+                    {
+                        if (!new[] { 0, 1 }.Contains(cnt))
+                        {
+                            count = cnt;
+                        }
+                    }
+
+                    _processedImages.Where(img => img.Id == selectedItemKey.Text).First().Count = count;
+                    RecalculateProcessedImagesCollection();
                 }
             }
-            var selectedItemKey = ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[0];
-            _processedImages.Where(img => img.Id == selectedItemKey.Text).First().Count = count;
-            RecalculateProcessedImagesCollection();
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void ProductImagesList_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
-            var imagePath =_processedImages.Where(img => img.Id == e.Item.SubItems[0].Text).First().Path;
-            PictureBox.LoadAsync(imagePath);
+            try
+            {
+                if (e.IsSelected)
+                {
+                    var imagePath = _processedImages.Where(img => img.Id == e.Item.SubItems[0].Text).First().Path;
+                    PictureBox.LoadAsync(imagePath);
+                }
+                else
+                {
+                    if (PictureBox.Image != null)
+                    {
+                        PictureBox.Image.Dispose();
+                        PictureBox.Image = null;
+                    }
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Ошибка загрузки изображения");
+                PictureBox.Image = null;
+                ProductImagesList.SelectedItems.Clear();
+            }
+        }
+
+        private void FixProductListCount()
+        {
+            try
+            {
+                foreach (ListViewItem item in ProductImagesList.Items)
+                {
+                    if (new[] { "1", "0" }.Contains(item.SubItems[1].Text))
+                    {
+                        item.SubItems[1].Text = string.Empty;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void ResetOrder_Click(object sender, EventArgs e)
         {
-            _foundImages.Clear();
-            _foundImagesEnumerator = null;
-            DestinationBox.ReadOnly = false;
-            DestinationBox.Clear();
-            DestinationBox.BackColor = SystemColors.Control;
-            InputBarcodeBox.Visible = false;
-            if (PictureBox.Image != null)
+            try
             {
-                PictureBox.Image.Dispose();
-                PictureBox.Image = null;
+                _foundImages.Clear();
+                _foundImagesEnumerator = null;
+                DestinationBox.ReadOnly = false;
+                DestinationBox.Clear();
+                DestinationBox.BackColor = SystemColors.Control;
+                InputBarcodeBox.Visible = false;
+                if (PictureBox.Image != null)
+                {
+                    PictureBox.Image.Dispose();
+                    PictureBox.Image = null;
+                }
+                BarcodeLabel.Visible = false;
+                NextPicBtn.Visible = false;
+                ProductImagesList.Items.Clear();
+                BarcodeCountLabel.Text = "0";
+                ProductCountLabel.Text = "0";
+                _processedImages.Clear();
+                _service.SetDestinationDirectory(null);
             }
-            BarcodeLabel.Visible = false;
-            NextPicBtn.Visible = false;
-            ProductImagesList.Items.Clear();
-            BarcodeCountLabel.Text = "0";
-            ProductCountLabel.Text = "0";
-            _processedImages.Clear();
-            _service.SetDestinationDirectory(null);
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void MainForm_Activated(object sender, EventArgs e)
@@ -291,15 +415,25 @@ namespace BulkCopier
 
         private void ProductImagesList_Leave(object sender, EventArgs e)
         {
-            if (PictureBox.Focused)
+            try
             {
-                return;
-            }
+                if (PictureBox.Focused)
+                {
+                    return;
+                }
 
-            if (PictureBox.Image != null)
+                ProductImagesList.SelectedItems.Clear();
+                if (PictureBox.Image != null)
+                {
+                    PictureBox.Image.Dispose();
+                    PictureBox.Image = null;
+                }
+
+                FixProductListCount();
+            }
+            catch (Exception ex)
             {
-                PictureBox.Image.Dispose();
-                PictureBox.Image = null;
+                MessageBox.Show(ex.Message);
             }
         }
 
@@ -310,24 +444,94 @@ namespace BulkCopier
 
         private void ProductImagesList_Enter(object sender, EventArgs e)
         {
-            if (ProductImagesList.SelectedIndices.Count > 0)
+            try
             {
-                var selectedItemKey = ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[0];
-                var imagePath = _processedImages.Where(img => img.Id == selectedItemKey.Text).First().Path;
-                PictureBox.LoadAsync(imagePath); 
+                if (ProductImagesList.SelectedIndices.Count > 0)
+                {
+                    var selectedItemKey = ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[0];
+                    var imagePath = _processedImages.Where(img => img.Id == selectedItemKey.Text).First().Path;
+                    PictureBox.LoadAsync(imagePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
 
         private void PictureBox_Click(object sender, EventArgs e)
         {
-            var filePath = PictureBox.ImageLocation;
-            ProcessStartInfo Info = new ProcessStartInfo()
+            try
             {
-                FileName = "mspaint.exe",
-                WindowStyle = ProcessWindowStyle.Maximized,
-                Arguments = filePath
-            };
-            Process.Start(Info);
+                if (ProductImagesList.SelectedIndices.Count > 0)
+                {
+                    var selectedItemValue = ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[1];
+                    Clipboard.SetText(selectedItemValue.Text);
+                }
+                var filePath = PictureBox.ImageLocation;
+                ProcessStartInfo Info = new ProcessStartInfo()
+                {
+                    FileName = "mspaint.exe",
+                    WindowStyle = ProcessWindowStyle.Maximized,
+                    Arguments = filePath
+                };
+                Process.Start(Info);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private static void GetFileNamesForTest(string path)
+        {
+            var filename = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "FileList.txt");
+
+            using (StreamWriter stream = new StreamWriter(filename))
+            {
+                var files = Directory.GetFiles(path, "*.jpg");
+                foreach (string file in files)
+                {
+                    stream.WriteLine(Path.GetFileNameWithoutExtension(file));
+                }
+            }
+        }
+
+        private void MainForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.F2)
+            {
+                if (folderBrowserDialog1.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog1.SelectedPath))
+                {
+                    GetFileNamesForTest(folderBrowserDialog1.SelectedPath);
+                } 
+            }
+        }
+
+        private async void DestinationBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            try
+            {
+                if (e.KeyCode == Keys.Enter)
+                {
+                    if (!string.IsNullOrWhiteSpace(DestinationBox.Text))
+                    {
+                        await _service.SetDestinationDirectory(DestinationBox.Text);
+                        DestinationBox.BackColor = Color.LimeGreen;
+                        InputBarcodeBox.Visible = _service.IsSourceDirectorySet();
+                        DestinationBox.ReadOnly = true;
+                    }
+                    else
+                    {
+                        DestinationBox.ReadOnly = false;
+                        DestinationBox.BackColor = SystemColors.Control;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 }
