@@ -13,5 +13,6 @@ namespace DataAccess.Contract.Interfaces
         Task<IReadOnlyCollection<QuickIOFileInfo>> FindFile(string filename);
         bool IsSourceDirectorySet();
         bool IsDestinationDirectorySet();
+        Task DeleteFile(string id);
     }
 }

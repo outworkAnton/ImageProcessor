@@ -13,5 +13,6 @@ namespace BusinessLogic.Contract.Interfaces
         Task<string> CopyFile(string id);
         bool IsSourceDirectorySet();
         bool IsDestinationDirectorySet();
+        Task DeleteFile(string id);
     }
 }

@@ -101,5 +101,10 @@ namespace BusinessLogic.Services
         {
             return _repository.IsDestinationDirectorySet();
         }
+
+        public async Task DeleteFile(string id)
+        {
+            await _repository.DeleteFile(id).ConfigureAwait(false);
+        }
     }
 }

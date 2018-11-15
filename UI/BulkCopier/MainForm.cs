@@ -57,6 +57,7 @@ namespace BulkCopier
                 {
                     PictureBox.Image.Dispose();
                     PictureBox.Image = null;
+                    PictureBox.ImageLocation = null;
                 }
                 BarcodeLabel.Visible = false;
                 NextPicBtn.Visible = false;
@@ -74,7 +75,8 @@ namespace BulkCopier
                     InputBarcodeBox.BackColor = Color.LimeGreen;
                     _foundImagesEnumerator = _foundImages.GetEnumerator();
                     _foundImagesEnumerator.MoveNext();
-                    PictureBox.LoadAsync(_foundImagesEnumerator.Current.Path);
+                    PictureBox.ImageLocation = _foundImagesEnumerator.Current.Path;
+                    PictureBox.LoadAsync();
                     BarcodeLabel.Visible = true;
                     BarcodeLabel.Text = _foundImagesEnumerator.Current.Id;
 
@@ -195,14 +197,16 @@ namespace BulkCopier
                     _foundImagesEnumerator.MoveNext();
                 }
 
-                PictureBox.LoadAsync(_foundImagesEnumerator.Current.Path);
+                PictureBox.ImageLocation = _foundImagesEnumerator.Current.Path;
+                PictureBox.LoadAsync();
                 BarcodeLabel.Text = _foundImagesEnumerator.Current.Id;
                 InputBarcodeBox.Focus();
             }
             catch
             {
                 PictureBox.Image = null;
-                PictureBox.LoadAsync(_foundImagesEnumerator.Current.Path);
+                PictureBox.ImageLocation = _foundImagesEnumerator.Current.Path;
+                PictureBox.LoadAsync();
                 BarcodeLabel.Text = _foundImagesEnumerator.Current.Id;
                 InputBarcodeBox.Focus();
             }
@@ -270,10 +274,13 @@ namespace BulkCopier
                 }
                 
             }
-            InputBarcodeBox.Clear();
+            finally
+            {
+                InputBarcodeBox.Clear();
+            }
         }
 
-        private void ProductImagesList_KeyDown(object sender, KeyEventArgs e)
+        private async void ProductImagesList_KeyDown(object sender, KeyEventArgs e)
         {
             try
             {
@@ -301,6 +308,7 @@ namespace BulkCopier
                         }
                     } else if (e.KeyCode == Keys.Delete)
                     {
+                        await _service.DeleteFile(selectedItemKey.Text);
                         _processedImages.Remove(_processedImages.FirstOrDefault(img => img.Id == selectedItemKey.Text));
                         ProductImagesList.Items.Remove(ProductImagesList.Items[ProductImagesList.SelectedIndices[0]]);
                         RecalculateProcessedImagesCollection();
@@ -339,7 +347,12 @@ namespace BulkCopier
                 if (e.IsSelected)
                 {
                     var imagePath = _processedImages.Where(img => img.Id == e.Item.SubItems[0].Text).First().Path;
-                    PictureBox.LoadAsync(imagePath);
+                    if (!File.Exists(imagePath))
+                    {
+                        throw new FileNotFoundException("Файл изображения не найден");
+                    }
+                    PictureBox.ImageLocation = imagePath;
+                    PictureBox.LoadAsync();
                 }
                 else
                 {
@@ -350,10 +363,14 @@ namespace BulkCopier
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                MessageBox.Show("Ошибка загрузки изображения");
+                MessageBox.Show("Ошибка загрузки изображения\n" + ex.Message);
                 PictureBox.Image = null;
+                PictureBox.ImageLocation = null;
+                _processedImages.Remove(_processedImages.FirstOrDefault(img => img.Id == e.Item.Text));
+                ProductImagesList.Items.Remove(ProductImagesList.Items[ProductImagesList.SelectedIndices[0]]);
+                RecalculateProcessedImagesCollection();
                 ProductImagesList.SelectedItems.Clear();
             }
         }

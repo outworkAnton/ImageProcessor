@@ -240,5 +240,12 @@ namespace DataAccess
         public bool IsSourceDirectorySet() => _sourceDirectory != null;
 
         public bool IsDestinationDirectorySet() => _destinationDirectory != null;
+
+        public async Task DeleteFile(string id)
+        {
+            var item = _filesFound.FirstOrDefault(f => f.Name == id + ".jpg");
+            var fileForDelete = Path.Combine(_destinationDirectory.FullName, Path.GetFileName(item.FullName));
+            await QuickIOFile.DeleteAsync(fileForDelete).ConfigureAwait(false);
+        }
     }
 }
