@@ -483,16 +483,22 @@ namespace BulkCopier
                 if (ProductImagesList.SelectedIndices.Count > 0)
                 {
                     var selectedItemValue = ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[1];
-                    Clipboard.SetText(selectedItemValue.Text);
+                    if (!string.IsNullOrWhiteSpace(selectedItemValue.Text))
+                    {
+                        Clipboard.SetText(selectedItemValue.Text);
+                    }
                 }
-                var filePath = PictureBox.ImageLocation;
-                ProcessStartInfo Info = new ProcessStartInfo()
+                if (_processedImages.Any(img => img.Id == _foundImagesEnumerator?.Current?.Id))
                 {
-                    FileName = "mspaint.exe",
-                    WindowStyle = ProcessWindowStyle.Maximized,
-                    Arguments = filePath
-                };
-                Process.Start(Info);
+                    var filePath = PictureBox.ImageLocation;
+                    ProcessStartInfo Info = new ProcessStartInfo()
+                    {
+                        FileName = "mspaint.exe",
+                        WindowStyle = ProcessWindowStyle.Maximized,
+                        Arguments = filePath
+                    };
+                    Process.Start(Info); 
+                }
             }
             catch (Exception ex)
             {
