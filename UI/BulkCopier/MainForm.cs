@@ -456,7 +456,10 @@ namespace BulkCopier
 
         private async void MainForm_Deactivate(object sender, EventArgs e)
         {
-            await ProcessProductImage();
+            if (!File.Exists(_foundImagesEnumerator?.Current?.Path))
+            {
+                await ProcessProductImage();
+            }
         }
 
         private void ProductImagesList_Enter(object sender, EventArgs e)
@@ -476,7 +479,7 @@ namespace BulkCopier
             }
         }
 
-        private void PictureBox_Click(object sender, EventArgs e)
+        private async void PictureBox_Click(object sender, EventArgs e)
         {
             try
             {
@@ -488,21 +491,28 @@ namespace BulkCopier
                         Clipboard.SetText(selectedItemValue.Text);
                     }
                 }
-                if (_processedImages.Any(img => img.Id == _foundImagesEnumerator?.Current?.Id))
+                if (!_processedImages.Any(img => img.Id == _foundImagesEnumerator?.Current?.Id))
                 {
-                    var filePath = PictureBox.ImageLocation;
-                    ProcessStartInfo Info = new ProcessStartInfo()
-                    {
-                        FileName = "mspaint.exe",
-                        WindowStyle = ProcessWindowStyle.Maximized,
-                        Arguments = filePath
-                    };
-                    Process.Start(Info); 
+                    await ProcessProductImage();
+                    PictureBox.ImageLocation = _processedImages.Where(img => img.Id == _foundImagesEnumerator?.Current?.Id).First().Path;
                 }
+                var filePath = PictureBox.ImageLocation;
+                ProcessStartInfo Info = new ProcessStartInfo()
+                {
+                    FileName = "mspaint.exe",
+                    WindowStyle = ProcessWindowStyle.Maximized,
+                    Arguments = filePath
+                };
+                Process.Start(Info);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                PictureBox.ImageLocation = null;
+                PictureBox.Image = null;
             }
         }
 
