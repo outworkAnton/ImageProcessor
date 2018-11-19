@@ -265,7 +265,7 @@ namespace BulkCopier
                     }
                     else
                     {
-                        throw new Exception();
+                        throw new ApplicationException();
                     }
                 }
                 catch
@@ -322,15 +322,12 @@ namespace BulkCopier
                     selectedItemValue.Text += pressedKey;
 
                     var count = 1;
-                    if (int.TryParse(selectedItemValue.Text, out var cnt))
+                    if (int.TryParse(selectedItemValue.Text, out var cnt) && !new[] { 0, 1 }.Contains(cnt))
                     {
-                        if (!new[] { 0, 1 }.Contains(cnt))
-                        {
-                            count = cnt;
-                        }
+                        count = cnt;
                     }
 
-                    _processedImages.Where(img => img.Id == selectedItemKey.Text).First().Count = count;
+                    _processedImages.First(img => img.Id == selectedItemKey.Text).Count = count;
                     RecalculateProcessedImagesCollection();
                 }
             }
@@ -346,7 +343,7 @@ namespace BulkCopier
             {
                 if (e.IsSelected)
                 {
-                    var imagePath = _processedImages.Where(img => img.Id == e.Item.SubItems[0].Text).First().Path;
+                    var imagePath = _processedImages.First(img => img.Id == e.Item.SubItems[0].Text).Path;
                     if (!File.Exists(imagePath))
                     {
                         throw new FileNotFoundException("Файл изображения не найден");
@@ -427,7 +424,7 @@ namespace BulkCopier
             if (InputBarcodeBox.Visible)
             {
                 InputBarcodeBox.Focus();
-            } 
+            }
         }
 
         private void ProductImagesList_Leave(object sender, EventArgs e)
@@ -456,7 +453,7 @@ namespace BulkCopier
 
         private async void MainForm_Deactivate(object sender, EventArgs e)
         {
-            if (!File.Exists(_foundImagesEnumerator?.Current?.Path))
+            if (!_processedImages.Any(img => img.Id == _foundImagesEnumerator?.Current?.Id))
             {
                 await ProcessProductImage();
             }
@@ -469,7 +466,7 @@ namespace BulkCopier
                 if (ProductImagesList.SelectedIndices.Count > 0)
                 {
                     var selectedItemKey = ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[0];
-                    var imagePath = _processedImages.Where(img => img.Id == selectedItemKey.Text).First().Path;
+                    var imagePath = _processedImages.First(img => img.Id == selectedItemKey.Text).Path;
                     PictureBox.LoadAsync(imagePath);
                 }
             }
@@ -494,7 +491,7 @@ namespace BulkCopier
                 if (!_processedImages.Any(img => img.Id == _foundImagesEnumerator?.Current?.Id))
                 {
                     await ProcessProductImage();
-                    PictureBox.ImageLocation = _processedImages.Where(img => img.Id == _foundImagesEnumerator?.Current?.Id).First().Path;
+                    PictureBox.ImageLocation = _processedImages.First(img => img.Id == _foundImagesEnumerator?.Current?.Id).Path;
                 }
                 var filePath = PictureBox.ImageLocation;
                 ProcessStartInfo Info = new ProcessStartInfo()
@@ -522,8 +519,7 @@ namespace BulkCopier
 
             using (StreamWriter stream = new StreamWriter(filename))
             {
-                var files = Directory.GetFiles(path, "*.jpg");
-                foreach (string file in files)
+                foreach (string file in Directory.GetFiles(path, "*.jpg"))
                 {
                     stream.WriteLine(Path.GetFileNameWithoutExtension(file));
                 }
@@ -532,12 +528,10 @@ namespace BulkCopier
 
         private void MainForm_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.F2)
+            if (e.KeyCode == Keys.F2 && folderBrowserDialog1.ShowDialog() == DialogResult.OK 
+                && !string.IsNullOrWhiteSpace(folderBrowserDialog1.SelectedPath))
             {
-                if (folderBrowserDialog1.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog1.SelectedPath))
-                {
-                    GetFileNamesForTest(folderBrowserDialog1.SelectedPath);
-                } 
+                GetFileNamesForTest(folderBrowserDialog1.SelectedPath);
             }
         }
 

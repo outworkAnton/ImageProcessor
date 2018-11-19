@@ -69,7 +69,7 @@ namespace DataAccess
                     throw new DirectoryNotFoundException("Целевая папка не доступна");
                 }
 
-                var item = _filesFound.FirstOrDefault(f => f.Name == filename + ".jpg");
+                var item = _filesFound.Find(f => f.Name == filename + ".jpg");
                 var newFilePath = Path.Combine(_destinationDirectory.FullName, Path.GetFileName(item.FullName));
                 if (await QuickIOFile.ExistsAsync(newFilePath).ConfigureAwait(false))
                 {
@@ -122,13 +122,12 @@ namespace DataAccess
                     throw new IOException("Возникла ошибка при попытке получить список файлов из исходной папки");
                 }
             }
-            return _filesFound.Count();
+            return _filesFound.Count;
         }
 
         private IEnumerable<string> FindAccessableFiles(string path, string file_pattern, bool recurse)
         {
             Console.WriteLine(path);
-            var list = new List<string>();
             var required_extension = "jpg";
 
             if (File.Exists(path))
@@ -152,7 +151,7 @@ namespace DataAccess
             {
                 files = top_directory.EnumerateFiles(file_pattern).GetEnumerator();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 files = null;
             }
@@ -162,7 +161,7 @@ namespace DataAccess
                 FileInfo file = null;
                 try
                 {
-                    if (files != null && files.MoveNext())
+                    if (files?.MoveNext() == true)
                         file = files.Current;
                     else
                         break;
@@ -187,7 +186,7 @@ namespace DataAccess
             {
                 dirs = top_directory.EnumerateDirectories("*").GetEnumerator();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 dirs = null;
             }
@@ -198,7 +197,7 @@ namespace DataAccess
                 DirectoryInfo dir = null;
                 try
                 {
-                    if (dirs != null && dirs.MoveNext())
+                    if (dirs?.MoveNext() == true)
                         dir = dirs.Current;
                     else
                         break;
@@ -221,7 +220,7 @@ namespace DataAccess
         {
             try
             {
-                if (!_filesFound.Any())
+                if (_filesFound.Count == 0)
                 {
                     await FindAllFiles().ConfigureAwait(false);
                 }
