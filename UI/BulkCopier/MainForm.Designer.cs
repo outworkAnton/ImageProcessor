@@ -50,12 +50,12 @@
             this.MainTable = new System.Windows.Forms.TableLayoutPanel();
             this.LeftTable = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
+            this.label3 = new System.Windows.Forms.Label();
             this.RightTable = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel6 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel7 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel8 = new System.Windows.Forms.TableLayoutPanel();
-            this.label3 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.PictureBox)).BeginInit();
             this.MainTable.SuspendLayout();
             this.LeftTable.SuspendLayout();
@@ -87,7 +87,7 @@
             this.InputBarcodeBox.Location = new System.Drawing.Point(3, 3);
             this.InputBarcodeBox.MinimumSize = new System.Drawing.Size(25, 30);
             this.InputBarcodeBox.Name = "InputBarcodeBox";
-            this.InputBarcodeBox.Size = new System.Drawing.Size(331, 30);
+            this.InputBarcodeBox.Size = new System.Drawing.Size(331, 26);
             this.InputBarcodeBox.TabIndex = 0;
             this.InputBarcodeBox.Visible = false;
             this.InputBarcodeBox.WordWrap = false;
@@ -313,6 +313,16 @@
             this.tableLayoutPanel3.Size = new System.Drawing.Size(229, 27);
             this.tableLayoutPanel3.TabIndex = 4;
             // 
+            // label3
+            // 
+            this.label3.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(122, 7);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(53, 13);
+            this.label3.TabIndex = 7;
+            this.label3.Text = "Товаров:";
+            // 
             // RightTable
             // 
             this.RightTable.ColumnCount = 1;
@@ -403,16 +413,6 @@
             this.tableLayoutPanel8.Size = new System.Drawing.Size(331, 27);
             this.tableLayoutPanel8.TabIndex = 4;
             // 
-            // label3
-            // 
-            this.label3.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(122, 7);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(53, 13);
-            this.label3.TabIndex = 7;
-            this.label3.Text = "Товаров:";
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -427,6 +427,7 @@
             this.Text = "BulkCopier";
             this.Activated += new System.EventHandler(this.MainForm_Activated);
             this.Deactivate += new System.EventHandler(this.MainForm_Deactivate);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.ResizeEnd += new System.EventHandler(this.MainForm_ResizeEnd);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyDown);

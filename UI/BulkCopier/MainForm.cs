@@ -588,7 +588,7 @@ namespace BulkCopier
 
             for (int i = 0; i < aiWeights.Length; i++)
             {
-                listView.Columns[i].Width = iListViewWidth * aiWeights[i] / iTotWeight;
+                listView.Columns[i].Width = (iListViewWidth * aiWeights[i] / iTotWeight) - 1;
             }
         }
 
@@ -596,14 +596,19 @@ namespace BulkCopier
         {
             Properties.Settings.Default.FormWidth = Width;
             Properties.Settings.Default.FormHeight = Height;
-            Properties.Settings.Default.FormTopPos = Location.X;
-            Properties.Settings.Default.FormLeftPos = Location.Y;
             Properties.Settings.Default.Save();
         }
 
         private void PictureBox_MouseEnter(object sender, EventArgs e)
         {
             PictureBox.Cursor = PictureBox.Image != null ? Cursors.Hand : DefaultCursor;
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Properties.Settings.Default.FormTopPos = Location.X;
+            Properties.Settings.Default.FormLeftPos = Location.Y;
+            Properties.Settings.Default.Save();
         }
     }
 }
