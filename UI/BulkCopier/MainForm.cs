@@ -113,6 +113,11 @@ namespace BulkCopier
         {
             try
             {
+                Height = Properties.Settings.Default.FormHeight;
+                Width = Properties.Settings.Default.FormWidth;
+                Location = new Point(Properties.Settings.Default.FormTopPos, Properties.Settings.Default.FormLeftPos);
+                AdjustColumnWidths(ProductImagesList);
+
                 var sourcePath = Properties.Settings.Default.SourcePath;
                 if (!string.IsNullOrWhiteSpace(sourcePath) && Directory.Exists(sourcePath))
                 {
@@ -480,6 +485,10 @@ namespace BulkCopier
         {
             try
             {
+                if (PictureBox.Image == null)
+                {
+                    return;
+                }
                 if (ProductImagesList.SelectedIndices.Count > 0)
                 {
                     var selectedItemValue = ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[1];
@@ -559,6 +568,42 @@ namespace BulkCopier
             {
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        private void ProductImagesList_Resize(object sender, EventArgs e)
+        {
+            AdjustColumnWidths(ProductImagesList);
+        }
+
+        private void AdjustColumnWidths(ListView listView)
+        {
+            int iListViewWidth = listView.ClientSize.Width;
+            var aiWeights = new int[] { 60, 40 };
+            int iTotWeight = 0;
+
+            foreach (int n in aiWeights)
+            {
+                iTotWeight += n;
+            }
+
+            for (int i = 0; i < aiWeights.Length; i++)
+            {
+                listView.Columns[i].Width = iListViewWidth * aiWeights[i] / iTotWeight;
+            }
+        }
+
+        private void MainForm_ResizeEnd(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.FormWidth = Width;
+            Properties.Settings.Default.FormHeight = Height;
+            Properties.Settings.Default.FormTopPos = Location.X;
+            Properties.Settings.Default.FormLeftPos = Location.Y;
+            Properties.Settings.Default.Save();
+        }
+
+        private void PictureBox_MouseEnter(object sender, EventArgs e)
+        {
+            PictureBox.Cursor = PictureBox.Image != null ? Cursors.Hand : DefaultCursor;
         }
     }
 }
