@@ -15,27 +15,38 @@ namespace BulkCopier
 {
     public partial class MainForm : Form
     {
-        private readonly ICopyFilesService _service;
+        private readonly ICopyFilesService _copyFileService;
         private List<ProductImage> _foundImages = new List<ProductImage>();
         private IEnumerator<ProductImage> _foundImagesEnumerator;
         private ObservableCollection<ProductImage> _processedImages = new ObservableCollection<ProductImage>();
 
-        public MainForm(ICopyFilesService service)
+        public MainForm(ICopyFilesService copyFileService)
         {
-            _service = service ?? throw new ArgumentNullException(nameof(service));
-            _processedImages.CollectionChanged += ProcessedImages_Change;
+            _copyFileService = copyFileService ?? throw new ArgumentNullException(nameof(copyFileService));
             InitializeComponent();
         }
 
-        private void ProcessedImages_Change(object sender, NotifyCollectionChangedEventArgs args)
+        private async void ProcessedImages_Change(object sender, NotifyCollectionChangedEventArgs args)
         {
-            RecalculateProcessedImagesCollection();
+            await RecalculateProcessedImagesCollection();
         }
 
-        private void RecalculateProcessedImagesCollection()
+        private async Task RecalculateProcessedImagesCollection()
         {
-            BarcodeCountLabel.Text = _processedImages.Count.ToString();
-            ProductCountLabel.Text = _processedImages.Sum(x => x.Count).ToString();
+            try
+            {
+                BarcodeCountLabel.Text = _processedImages.Count.ToString();
+                ProductCountLabel.Text = _processedImages.Sum(x => x.Count).ToString();
+                await _copyFileService.SaveProcessedImagesList(_processedImages);
+            }
+            catch (IOException io)
+            {
+                MessageBox.Show("Не удалось сохранить список файлов\n" + io.Message);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Временный список файлов в памяти приложения поврежден\n" + ex.Message);
+            }
         }
 
         private void InputBarcodeBox_DoubleClick(object sender, EventArgs e)
@@ -67,7 +78,7 @@ namespace BulkCopier
             _foundImagesEnumerator = null;
             try
             {
-                _foundImages = (await _service.FindFiles(InputBarcodeBox.Text))?.ToList() 
+                _foundImages = (await _copyFileService.FindFiles(InputBarcodeBox.Text))?.ToList() 
                     ?? throw new IOException("Источник изображений не найден");
 
                 if (_foundImages.Any())
@@ -96,7 +107,7 @@ namespace BulkCopier
             }
             catch (Exception ex)
             {
-                _service.SetSourceDirectory(null);
+                _copyFileService.SetSourceDirectory(null);
                 Properties.Settings.Default.SourcePath = string.Empty;
                 Properties.Settings.Default.Save();
                 SourceBox.Clear();
@@ -121,9 +132,9 @@ namespace BulkCopier
                 var sourcePath = Properties.Settings.Default.SourcePath;
                 if (!string.IsNullOrWhiteSpace(sourcePath) && Directory.Exists(sourcePath))
                 {
-                    _service.SetSourceDirectory(sourcePath);
+                    _copyFileService.SetSourceDirectory(sourcePath);
                     SourceBox.Text = sourcePath;
-                    FoundFilesCount.Text = (await _service.FindAllFiles()).ToString();
+                    FoundFilesCount.Text = (await _copyFileService.FindAllFiles()).ToString();
                     SourceBox.BackColor = Color.LimeGreen;
                 }
             }
@@ -144,10 +155,18 @@ namespace BulkCopier
                 if (folderBrowserDialog1.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog1.SelectedPath))
                 {
                     DestinationBox.Text = folderBrowserDialog1.SelectedPath;
-                    await _service.SetDestinationDirectory(DestinationBox.Text);
+                    await _copyFileService.SetDestinationDirectory(DestinationBox.Text);
                     DestinationBox.BackColor = Color.LimeGreen;
-                    InputBarcodeBox.Visible = _service.IsSourceDirectorySet();
+                    InputBarcodeBox.Visible = _copyFileService.IsSourceDirectorySet();
                     DestinationBox.ReadOnly = true;
+                    _processedImages = await _copyFileService.LoadFromDestinationDirectory();
+                    _processedImages.CollectionChanged += ProcessedImages_Change;
+                    if (_processedImages.Any())
+                    {
+                        ProductImagesList.Items.AddRange(ConvertProcessedToList(_processedImages));
+                        FixProductListCount();
+                        await RecalculateProcessedImagesCollection();
+                    }
                 }
                 else
                 {
@@ -155,12 +174,31 @@ namespace BulkCopier
                     DestinationBox.BackColor = SystemColors.Control;
                 }
             }
+            catch (FileLoadException fl)
+            {
+                MessageBox.Show("Загрузка списка изображений из сохраненного файла со списком не удалась\n" + fl.Message);
+            }
+            catch (IOException io)
+            {
+                MessageBox.Show("Не удалось получить список файлов в целевой папке\n" + io.Message);
+            }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
                 DestinationBox.ReadOnly = false;
+                DestinationBox.Clear();
                 DestinationBox.BackColor = SystemColors.Control;
             }
+        }
+
+        private ListViewItem[] ConvertProcessedToList(ObservableCollection<ProductImage> processedImages)
+        {
+            var list = new List<ListViewItem>();
+            foreach (var item in processedImages)
+            {
+                list.Add(new ListViewItem(new[] { item.Id, item.Count.ToString() }));
+            }
+            return list.ToArray();
         }
 
         private async void SourceBtn_Click(object sender, EventArgs e)
@@ -176,10 +214,10 @@ namespace BulkCopier
                     Properties.Settings.Default.SourcePath = sourcePath;
                     Properties.Settings.Default.Save();
                     SourceBox.Text = sourcePath;
-                    _service.SetSourceDirectory(sourcePath);
-                    FoundFilesCount.Text = (await _service.FindAllFiles()).ToString();
+                    _copyFileService.SetSourceDirectory(sourcePath);
+                    FoundFilesCount.Text = (await _copyFileService.FindAllFiles()).ToString();
                     SourceBox.BackColor = Color.LimeGreen;
-                    InputBarcodeBox.Visible = _service.IsDestinationDirectorySet();
+                    InputBarcodeBox.Visible = _copyFileService.IsDestinationDirectorySet();
                 }
             }
             catch (Exception ex)
@@ -235,7 +273,7 @@ namespace BulkCopier
                 {
                     return;
                 }
-                newFilePath = await _service.CopyFile(_foundImagesEnumerator.Current.Id);
+                newFilePath = await _copyFileService.CopyFile(_foundImagesEnumerator.Current.Id);
                 _processedImages.Insert(0, new ProductImage(_foundImagesEnumerator.Current.Id, newFilePath));
                 ProductImagesList.Items.Insert(0, new ListViewItem(new[] { _foundImagesEnumerator.Current.Id, "" }));
             }
@@ -313,10 +351,10 @@ namespace BulkCopier
                         }
                     } else if (e.KeyCode == Keys.Delete)
                     {
-                        await _service.DeleteFile(selectedItemKey.Text);
+                        await _copyFileService.DeleteFile(selectedItemKey.Text);
                         _processedImages.Remove(_processedImages.FirstOrDefault(img => img.Id == selectedItemKey.Text));
                         ProductImagesList.Items.Remove(ProductImagesList.Items[ProductImagesList.SelectedIndices[0]]);
-                        RecalculateProcessedImagesCollection();
+                        await RecalculateProcessedImagesCollection();
                         return;
                     }
                     else
@@ -333,7 +371,7 @@ namespace BulkCopier
                     }
 
                     _processedImages.First(img => img.Id == selectedItemKey.Text).Count = count;
-                    RecalculateProcessedImagesCollection();
+                    await RecalculateProcessedImagesCollection();
                 }
             }
             catch (Exception ex)
@@ -342,7 +380,7 @@ namespace BulkCopier
             }
         }
 
-        private void ProductImagesList_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+        private async void ProductImagesList_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
             try
             {
@@ -372,7 +410,7 @@ namespace BulkCopier
                 PictureBox.ImageLocation = null;
                 _processedImages.Remove(_processedImages.FirstOrDefault(img => img.Id == e.Item.Text));
                 ProductImagesList.Items.Remove(ProductImagesList.Items[ProductImagesList.SelectedIndices[0]]);
-                RecalculateProcessedImagesCollection();
+                await RecalculateProcessedImagesCollection();
                 ProductImagesList.SelectedItems.Clear();
             }
         }
@@ -416,7 +454,7 @@ namespace BulkCopier
                 BarcodeCountLabel.Text = "0";
                 ProductCountLabel.Text = "0";
                 _processedImages.Clear();
-                _service.SetDestinationDirectory(null);
+                _copyFileService.SetDestinationDirectory(null);
             }
             catch (Exception ex)
             {
@@ -458,7 +496,7 @@ namespace BulkCopier
 
         private async void MainForm_Deactivate(object sender, EventArgs e)
         {
-            if (!_processedImages.Any(img => img.Id == _foundImagesEnumerator?.Current?.Id))
+            if (_foundImagesEnumerator != null && !_processedImages.Any(img => img.Id == _foundImagesEnumerator?.Current?.Id))
             {
                 await ProcessProductImage();
             }
@@ -497,7 +535,7 @@ namespace BulkCopier
                         Clipboard.SetText(selectedItemValue.Text);
                     }
                 }
-                if (!_processedImages.Any(img => img.Id == _foundImagesEnumerator?.Current?.Id))
+                if (_foundImagesEnumerator != null && !_processedImages.Any(img => img.Id == _foundImagesEnumerator?.Current?.Id))
                 {
                     await ProcessProductImage();
                     PictureBox.ImageLocation = _processedImages.First(img => img.Id == _foundImagesEnumerator?.Current?.Id).Path;
@@ -552,9 +590,9 @@ namespace BulkCopier
                 {
                     if (!string.IsNullOrWhiteSpace(DestinationBox.Text))
                     {
-                        await _service.SetDestinationDirectory(DestinationBox.Text);
+                        await _copyFileService.SetDestinationDirectory(DestinationBox.Text);
                         DestinationBox.BackColor = Color.LimeGreen;
-                        InputBarcodeBox.Visible = _service.IsSourceDirectorySet();
+                        InputBarcodeBox.Visible = _copyFileService.IsSourceDirectorySet();
                         DestinationBox.ReadOnly = true;
                     }
                     else

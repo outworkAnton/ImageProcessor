@@ -114,7 +114,7 @@ namespace DataAccess
                 try
                 {
                     var files = FindAccessableFiles(_sourceDirectory.FullName, "*.jpg", true)
-                .Select(file => new QuickIOFileInfo(file)).ToList();
+                        .Select(file => new QuickIOFileInfo(file)).ToList();
                     _filesFound.AddRange(files);
                 }
                 catch
@@ -245,6 +245,88 @@ namespace DataAccess
             var item = _filesFound.FirstOrDefault(f => f.Name == id + ".jpg");
             var fileForDelete = Path.Combine(_destinationDirectory.FullName, Path.GetFileName(item.FullName));
             await QuickIOFile.DeleteAsync(fileForDelete).ConfigureAwait(false);
+        }
+
+        public async Task<string> LoadFromDestinationDirectory()
+        {
+            try
+            {
+                if (IsDestinationDirectorySet())
+                {
+                    IReadOnlyCollection<QuickIOFileInfo> jsonFiles = null;
+                    try
+                    {
+                        jsonFiles = (await _destinationDirectory
+                            .EnumerateFilesAsync("*.json", SearchOption.TopDirectoryOnly, QuickIOEnumerateOptions.SuppressAllExceptions)
+                            .ConfigureAwait(false))?
+                            .ToArray();
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+
+                    return await jsonFiles
+                        .FirstOrDefault()
+                        .ReadAllTextAsync()
+                        .ConfigureAwait(false);
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw new FileLoadException(ex.Message);
+            }
+        }
+
+        public async Task<IReadOnlyCollection<QuickIOFileInfo>> EnumerateDestinationDirectoryFiles()
+        {
+            try
+            {
+                return (await _destinationDirectory
+                    .EnumerateFilesAsync("*.jpg", SearchOption.TopDirectoryOnly, QuickIOEnumerateOptions.SuppressAllExceptions)
+                    .ConfigureAwait(false))?
+                        .ToArray();
+            }
+            catch (Exception ex)
+            {
+                throw new IOException(ex.Message);
+            }
+        }
+
+        public async Task SaveProcessedImagesList(string filesList)
+        {
+            try
+            {
+                if (IsDestinationDirectorySet())
+                {
+                    IReadOnlyCollection<QuickIOFileInfo> jsonFiles = null;
+                    try
+                    {
+                        jsonFiles = (await _destinationDirectory
+                            .EnumerateFilesAsync("*.json", SearchOption.TopDirectoryOnly, QuickIOEnumerateOptions.SuppressAllExceptions)
+                            .ConfigureAwait(false))?
+                            .ToArray();
+                    }
+                    catch
+                    {
+                        var filePath = Path.Combine(_destinationDirectory.FullName, "Processed Images.json");
+                        QuickIOFile.Create(filePath);
+                        var newJsonFile = new QuickIOFileInfo(filePath);
+                        await newJsonFile.WriteAllTextAsync(filesList).ConfigureAwait(false);
+                        return;
+                    }
+
+                    await jsonFiles
+                        .FirstOrDefault()
+                        .WriteAllTextAsync(filesList)
+                        .ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new IOException(ex.Message);
+            }
         }
     }
 }

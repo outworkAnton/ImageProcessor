@@ -1,28 +1,30 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BusinessLogic.Contract.Interfaces;
 using BusinessLogic.Contract.Models;
 using DataAccess.Contract.Interfaces;
+using Newtonsoft.Json;
 
 namespace BusinessLogic.Services
 {
     public class CopyFilesService : ICopyFilesService
     {
-        private readonly IDataAccessRepository _repository;
+        private readonly IDataAccessRepository _copyFilesRepository;
 
-        public CopyFilesService(IDataAccessRepository repository)
+        public CopyFilesService(IDataAccessRepository copyFilesRepository)
         {
-            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _copyFilesRepository = copyFilesRepository ?? throw new ArgumentNullException(nameof(copyFilesRepository));
         }
 
         public async Task<int> FindAllFiles()
         {
             try
             {
-                return await _repository.FindAllFiles().ConfigureAwait(false);
+                return await _copyFilesRepository.FindAllFiles().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -34,7 +36,7 @@ namespace BusinessLogic.Services
         {
             try
             {
-                _repository.SetSourceDirectory(path);
+                _copyFilesRepository.SetSourceDirectory(path);
             }
             catch (Exception ex)
             {
@@ -46,7 +48,7 @@ namespace BusinessLogic.Services
         {
             try
             {
-                await _repository.SetDestinationDirectory(path).ConfigureAwait(false);
+                await _copyFilesRepository.SetDestinationDirectory(path).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -58,7 +60,7 @@ namespace BusinessLogic.Services
         {
             try
             {
-                return (await _repository.FindFile(filename).ConfigureAwait(false))?
+                return (await _copyFilesRepository.FindFile(filename).ConfigureAwait(false))?
                     .Select(FileToModelConverter.ConvertToModel)?
                     .ToArray();
             }
@@ -72,7 +74,7 @@ namespace BusinessLogic.Services
         {
             try
             {
-                return await _repository.CopyFile(id).ConfigureAwait(false);
+                return await _copyFilesRepository.CopyFile(id).ConfigureAwait(false);
             }
             catch (FileNotFoundException fnf)
             {
@@ -94,17 +96,67 @@ namespace BusinessLogic.Services
 
         public bool IsSourceDirectorySet()
         {
-            return _repository.IsSourceDirectorySet();
+            return _copyFilesRepository.IsSourceDirectorySet();
         }
 
         public bool IsDestinationDirectorySet()
         {
-            return _repository.IsDestinationDirectorySet();
+            return _copyFilesRepository.IsDestinationDirectorySet();
         }
 
         public async Task DeleteFile(string id)
         {
-            await _repository.DeleteFile(id).ConfigureAwait(false);
+            await _copyFilesRepository.DeleteFile(id).ConfigureAwait(false);
+        }
+
+        public async Task<ObservableCollection<ProductImage>> LoadFromDestinationDirectory()
+        {
+            try
+            {
+                var files = new ObservableCollection<ProductImage>();
+                var bclFile = await _copyFilesRepository
+                            .LoadFromDestinationDirectory()
+                            .ConfigureAwait(false);
+                if (!string.IsNullOrWhiteSpace(bclFile))
+                {
+                    files = JsonConvert
+                        .DeserializeObject<ObservableCollection<ProductImage>>(bclFile);
+                }
+                else
+                {
+                    var filesInDir = await _copyFilesRepository.EnumerateDestinationDirectoryFiles().ConfigureAwait(false);
+
+                    if (filesInDir != null)
+                    {
+                        files = new ObservableCollection<ProductImage>(filesInDir
+                            .Select(FileToModelConverter.ConvertToModel)
+                            .ToArray());
+                    }
+                }
+
+                return files;
+            }
+            catch (FileLoadException fl)
+            {
+                throw new FileLoadException(fl.Message);
+            }
+            catch (IOException io)
+            {
+                throw new IOException(io.Message);
+            }
+        }
+
+        public async Task SaveProcessedImagesList(ObservableCollection<ProductImage> processedImages)
+        {
+            try
+            {
+                var filesList = JsonConvert.SerializeObject(processedImages, Formatting.None);
+                await _copyFilesRepository.SaveProcessedImagesList(filesList).ConfigureAwait(false);
+            }
+            catch (IOException io)
+            {
+                throw new IOException(io.Message);
+            }
         }
     }
 }

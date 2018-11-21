@@ -14,5 +14,8 @@ namespace DataAccess.Contract.Interfaces
         bool IsSourceDirectorySet();
         bool IsDestinationDirectorySet();
         Task DeleteFile(string id);
+        Task<string> LoadFromDestinationDirectory();
+        Task<IReadOnlyCollection<QuickIOFileInfo>> EnumerateDestinationDirectoryFiles();
+        Task SaveProcessedImagesList(string filesList);
     }
 }

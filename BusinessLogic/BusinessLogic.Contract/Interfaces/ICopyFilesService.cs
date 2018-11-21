@@ -1,5 +1,6 @@
 using BusinessLogic.Contract.Models;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 namespace BusinessLogic.Contract.Interfaces
@@ -14,5 +15,7 @@ namespace BusinessLogic.Contract.Interfaces
         bool IsSourceDirectorySet();
         bool IsDestinationDirectorySet();
         Task DeleteFile(string id);
+        Task<ObservableCollection<ProductImage>> LoadFromDestinationDirectory();
+        Task SaveProcessedImagesList(ObservableCollection<ProductImage> processedImages);
     }
 }
