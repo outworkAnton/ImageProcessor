@@ -152,13 +152,14 @@ namespace BulkCopier
             folderBrowserDialog1.RootFolder = Environment.SpecialFolder.DesktopDirectory;
             try
             {
-                if (folderBrowserDialog1.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog1.SelectedPath))
+                if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
                 {
                     DestinationBox.Text = folderBrowserDialog1.SelectedPath;
                     await _copyFileService.SetDestinationDirectory(DestinationBox.Text);
                     DestinationBox.BackColor = Color.LimeGreen;
                     InputBarcodeBox.Visible = _copyFileService.IsSourceDirectorySet();
                     DestinationBox.ReadOnly = true;
+                    ProductImagesList.Items.Clear();
                     _processedImages = await _copyFileService.LoadFromDestinationDirectory();
                     _processedImages.CollectionChanged += ProcessedImages_Change;
                     if (_processedImages.Any())
@@ -167,11 +168,6 @@ namespace BulkCopier
                         FixProductListCount();
                         await RecalculateProcessedImagesCollection();
                     }
-                }
-                else
-                {
-                    DestinationBox.ReadOnly = false;
-                    DestinationBox.BackColor = SystemColors.Control;
                 }
             }
             catch (FileLoadException fl)
@@ -206,7 +202,7 @@ namespace BulkCopier
             folderBrowserDialog1.RootFolder = Environment.SpecialFolder.MyComputer;
             try
             {
-                if (folderBrowserDialog1.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog1.SelectedPath))
+                if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
                 {
                     FoundFilesCount.Text = 0.ToString();
                     SourceBox.BackColor = SystemColors.Control;
