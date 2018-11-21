@@ -37,7 +37,10 @@ namespace BulkCopier
             {
                 BarcodeCountLabel.Text = _processedImages.Count.ToString();
                 ProductCountLabel.Text = _processedImages.Sum(x => x.Count).ToString();
-                await _copyFileService.SaveProcessedImagesList(_processedImages);
+                if (_processedImages.Any())
+                {
+                    await _copyFileService.SaveProcessedImagesList(_processedImages);
+                }
             }
             catch (IOException io)
             {
