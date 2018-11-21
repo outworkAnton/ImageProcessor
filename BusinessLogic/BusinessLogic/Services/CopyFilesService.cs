@@ -106,7 +106,14 @@ namespace BusinessLogic.Services
 
         public async Task DeleteFile(string id)
         {
-            await _copyFilesRepository.DeleteFile(id).ConfigureAwait(false);
+            try
+            {
+                await _copyFilesRepository.DeleteFile(id).ConfigureAwait(false);
+            }
+            catch (IOException io)
+            {
+                throw new IOException(io.Message);
+            }
         }
 
         public async Task<ObservableCollection<ProductImage>> LoadFromDestinationDirectory()

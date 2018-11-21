@@ -329,33 +329,34 @@ namespace BulkCopier
                     var selectedItemValue = ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[1];
                     var pressedKey = string.Empty;
 
-                    if (e.KeyCode >= Keys.D0 && e.KeyCode <= Keys.D9)
+                    switch (e.KeyCode)
                     {
-                        pressedKey = ((char)e.KeyValue).ToString();
-                    }
-                    else if (e.KeyCode >= Keys.NumPad0 && e.KeyCode <= Keys.NumPad9)
-                    {
-                        pressedKey = ((char)(e.KeyValue - 48)).ToString();
-                    }
-                    else if (e.KeyCode == Keys.Back)
-                    {
-                        var currentValue = selectedItemValue.Text;
-                        if (currentValue.Length > 0)
-                        {
-                            selectedItemValue.Text = pressedKey;
-                            pressedKey = currentValue.Remove(currentValue.Length - 1, 1);
-                        }
-                    } else if (e.KeyCode == Keys.Delete)
-                    {
-                        await _copyFileService.DeleteFile(selectedItemKey.Text);
-                        _processedImages.Remove(_processedImages.FirstOrDefault(img => img.Id == selectedItemKey.Text));
-                        ProductImagesList.Items.Remove(ProductImagesList.Items[ProductImagesList.SelectedIndices[0]]);
-                        await RecalculateProcessedImagesCollection();
-                        return;
-                    }
-                    else
-                    {
-                        return;
+                        case var key when (key >= Keys.D0 && key <= Keys.D9):
+                            pressedKey = ((char)e.KeyValue).ToString();
+                            break;
+
+                        case var key when (key >= Keys.NumPad0 && key <= Keys.NumPad9):
+                            pressedKey = ((char)(e.KeyValue - 48)).ToString();
+                            break;
+
+                        case Keys.Back:
+                            var currentValue = selectedItemValue.Text;
+                            if (currentValue.Length > 0)
+                            {
+                                selectedItemValue.Text = pressedKey;
+                                pressedKey = currentValue.Remove(currentValue.Length - 1, 1);
+                            }
+                            break;
+
+                        case Keys.Delete:
+                            await _copyFileService.DeleteFile(selectedItemKey.Text);
+                            _processedImages.Remove(_processedImages.FirstOrDefault(img => img.Id == selectedItemKey.Text));
+                            ProductImagesList.Items.Remove(ProductImagesList.Items[ProductImagesList.SelectedIndices[0]]);
+                            await RecalculateProcessedImagesCollection();
+                            return;
+
+                        default:
+                            return;
                     }
 
                     selectedItemValue.Text += pressedKey;
@@ -369,6 +370,10 @@ namespace BulkCopier
                     _processedImages.First(img => img.Id == selectedItemKey.Text).Count = count;
                     await RecalculateProcessedImagesCollection();
                 }
+            }
+            catch (IOException io)
+            {
+                MessageBox.Show("Не удалось удалить файл изображения\n" + io.Message);
             }
             catch (Exception ex)
             {
@@ -571,8 +576,7 @@ namespace BulkCopier
 
         private void MainForm_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.F2 && folderBrowserDialog1.ShowDialog() == DialogResult.OK 
-                && !string.IsNullOrWhiteSpace(folderBrowserDialog1.SelectedPath))
+            if (e.KeyCode == Keys.F2 && folderBrowserDialog1.ShowDialog() == DialogResult.OK)
             {
                 GetFileNamesForTest(folderBrowserDialog1.SelectedPath);
             }
@@ -582,20 +586,23 @@ namespace BulkCopier
         {
             try
             {
-                if (e.KeyCode == Keys.Enter)
+                switch (e.KeyCode)
                 {
-                    if (!string.IsNullOrWhiteSpace(DestinationBox.Text))
-                    {
-                        await _copyFileService.SetDestinationDirectory(DestinationBox.Text);
-                        DestinationBox.BackColor = Color.LimeGreen;
-                        InputBarcodeBox.Visible = _copyFileService.IsSourceDirectorySet();
-                        DestinationBox.ReadOnly = true;
-                    }
-                    else
-                    {
+                    case Keys.Enter:
+                        if (!string.IsNullOrWhiteSpace(DestinationBox.Text) && !DestinationBox.ReadOnly)
+                        {
+                            await _copyFileService.SetDestinationDirectory(DestinationBox.Text);
+                            DestinationBox.BackColor = Color.LimeGreen;
+                            InputBarcodeBox.Visible = _copyFileService.IsSourceDirectorySet();
+                            DestinationBox.ReadOnly = true;
+                        }
+                        break;
+
+                    case Keys.Delete:
+                        DestinationBox.Clear();
                         DestinationBox.ReadOnly = false;
                         DestinationBox.BackColor = SystemColors.Control;
-                    }
+                        break;
                 }
             }
             catch (Exception ex)

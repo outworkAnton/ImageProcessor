@@ -242,9 +242,16 @@ namespace DataAccess
 
         public async Task DeleteFile(string id)
         {
-            var item = _filesFound.FirstOrDefault(f => f.Name == id + ".jpg");
-            var fileForDelete = Path.Combine(_destinationDirectory.FullName, Path.GetFileName(item.FullName));
-            await QuickIOFile.DeleteAsync(fileForDelete).ConfigureAwait(false);
+            try
+            {
+                var item = _filesFound.FirstOrDefault(f => f.Name == id + ".jpg");
+                var fileForDelete = Path.Combine(_destinationDirectory.FullName, Path.GetFileName(item.FullName));
+                await QuickIOFile.DeleteAsync(fileForDelete).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                throw new IOException(ex.Message);
+            }
         }
 
         public async Task<string> LoadFromDestinationDirectory()
