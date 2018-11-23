@@ -28,7 +28,14 @@ namespace BulkCopier
 
         private async void ProcessedImages_Change(object sender, NotifyCollectionChangedEventArgs args)
         {
-            await RecalculateProcessedImagesCollection();
+            try
+            {
+                await RecalculateProcessedImagesCollection();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private async Task RecalculateProcessedImagesCollection()
@@ -44,11 +51,11 @@ namespace BulkCopier
             }
             catch (IOException io)
             {
-                MessageBox.Show("Не удалось сохранить список файлов\n" + io.Message);
+                throw new IOException("Не удалось сохранить список файлов\n" + io.Message);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Временный список файлов в памяти приложения поврежден\n" + ex.Message);
+                throw new Exception("Временный список файлов в памяти приложения поврежден\n" + ex.Message);
             }
         }
 
@@ -192,12 +199,19 @@ namespace BulkCopier
 
         private ListViewItem[] ConvertProcessedToList(ObservableCollection<ProductImage> processedImages)
         {
-            var list = new List<ListViewItem>();
-            foreach (var item in processedImages)
+            try
             {
-                list.Add(new ListViewItem(new[] { item.Id, item.Count.ToString() }));
+                var list = new List<ListViewItem>();
+                foreach (var item in processedImages)
+                {
+                    list.Add(new ListViewItem(new[] { item.Id, item.Count.ToString() }));
+                }
+                return list.ToArray();
             }
-            return list.ToArray();
+            catch (Exception ex)
+            {
+                throw new FileLoadException(ex.Message);
+            }
         }
 
         private async void SourceBtn_Click(object sender, EventArgs e)
@@ -256,11 +270,18 @@ namespace BulkCopier
 
         private async void InputBarcodeBox_Leave(object sender, EventArgs e)
         {
-            if (NextPicBtn.Focused || string.IsNullOrWhiteSpace(InputBarcodeBox.Text))
+            try
             {
-                return;
+                if (NextPicBtn.Focused || string.IsNullOrWhiteSpace(InputBarcodeBox.Text))
+                {
+                    return;
+                }
+                await ProcessProductImage();
             }
-            await ProcessProductImage();
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private async Task ProcessProductImage()
@@ -278,17 +299,17 @@ namespace BulkCopier
             }
             catch (ArgumentException a)
             {
-                MessageBox.Show(a.Message);
+                throw new ArgumentException(a.Message);
             }
             catch (FileNotFoundException fnf)
             {
-                MessageBox.Show("Не удалось скопировать файл в целевую папку\n" + fnf.Message);
                 _processedImages.Remove(_processedImages.FirstOrDefault(img => img.Id == _foundImagesEnumerator.Current.Id));
                 ProductImagesList.Items.Find(_foundImagesEnumerator.Current.Id, false).FirstOrDefault().Remove();
+                throw new FileNotFoundException("Не удалось скопировать файл в целевую папку\n" + fnf.Message);
             }
             catch (IOException io)
             {
-                MessageBox.Show("Ошибка при обработке файла изображения\n" + io.Message);
+                throw new IOException("Ошибка при обработке файла изображения\n" + io.Message);
             }
             catch (Exception ex)
             {
@@ -312,7 +333,7 @@ namespace BulkCopier
                 }
                 catch
                 {
-                    MessageBox.Show("Неизвестная ошибка в работе приложения\n" + ex.Message);
+                    throw new Exception("Неизвестная ошибка в работе приложения\n" + ex.Message);
                 }
                 
             }
@@ -433,7 +454,7 @@ namespace BulkCopier
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                throw new Exception(ex.Message);
             }
         }
 
@@ -500,9 +521,16 @@ namespace BulkCopier
 
         private async void MainForm_Deactivate(object sender, EventArgs e)
         {
-            if (_foundImagesEnumerator != null && !_processedImages.Any(img => img.Id == _foundImagesEnumerator?.Current?.Id))
+            try
             {
-                await ProcessProductImage();
+                if (_foundImagesEnumerator != null)
+                {
+                    await ProcessProductImage();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
 
@@ -539,7 +567,7 @@ namespace BulkCopier
                         Clipboard.SetText(selectedItemValue.Text);
                     }
                 }
-                if (_foundImagesEnumerator != null && !_processedImages.Any(img => img.Id == _foundImagesEnumerator?.Current?.Id))
+                if (_foundImagesEnumerator != null)
                 {
                     await ProcessProductImage();
                     PictureBox.ImageLocation = _processedImages.First(img => img.Id == _foundImagesEnumerator?.Current?.Id).Path;
@@ -579,9 +607,14 @@ namespace BulkCopier
 
         private void MainForm_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.F2 && folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            switch (e.KeyCode)
             {
-                GetFileNamesForTest(folderBrowserDialog1.SelectedPath);
+                case Keys.F2 when folderBrowserDialog1.ShowDialog() == DialogResult.OK:
+                    GetFileNamesForTest(folderBrowserDialog1.SelectedPath);
+                    break;
+                case Keys.F1:
+                    MessageBox.Show(Application.ProductVersion, "Версия приложения");
+                    break;
             }
         }
 
