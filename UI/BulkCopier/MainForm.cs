@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using BusinessLogic.Contract.Interfaces;
 using BusinessLogic.Contract.Models;
+using System.Drawing.Printing;
 
 namespace BulkCopier
 {
@@ -434,7 +435,7 @@ namespace BulkCopier
             }
         }
 
-        private void ResetOrder_Click(object sender, EventArgs e)
+        private void ResetToNewOrder()
         {
             try
             {
@@ -650,6 +651,47 @@ namespace BulkCopier
             Properties.Settings.Default.FormTopPos = Location.X;
             Properties.Settings.Default.FormLeftPos = Location.Y;
             Properties.Settings.Default.Save();
+        }
+
+        private void ResetOrder_Click_1(object sender, EventArgs e)
+        {
+            ResetToNewOrder();
+        }
+
+        private void Print_Click(object sender, EventArgs e)
+        {
+            printPreviewDialog1.Document = printDocument1;
+            printPreviewDialog1.ShowDialog();
+        }
+
+        private void printDocument1_PrintPage(object sender, PrintPageEventArgs e)
+        {
+            var img = Image.FromFile("D:\\Foto.jpg");
+            Point loc = new Point(100, 100);
+            e.Graphics.DrawImage(img, loc);
+
+            int charactersOnPage = 0;
+            int linesPerPage = 0;
+
+            // Sets the value of charactersOnPage to the number of characters 
+            // of stringToPrint that will fit within the bounds of the page.
+            e.Graphics.MeasureString(stringToPrint, this.Font,
+                e.MarginBounds.Size, StringFormat.GenericTypographic,
+                out charactersOnPage, out linesPerPage);
+
+            // Draws the string within the bounds of the page.
+            e.Graphics.DrawString(stringToPrint, this.Font, Brushes.Black,
+            e.MarginBounds, StringFormat.GenericTypographic);
+
+            // Remove the portion of the string that has been printed.
+            stringToPrint = stringToPrint.Substring(charactersOnPage);
+
+            // Check to see if more pages are to be printed.
+            e.HasMorePages = (stringToPrint.Length > 0);
+
+            // If there are no more pages, reset the string to be printed.
+            if (!e.HasMorePages)
+                stringToPrint = documentContents;
         }
     }
 }
