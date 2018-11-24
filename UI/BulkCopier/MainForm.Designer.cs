@@ -115,7 +115,7 @@
             // Barcode
             // 
             this.Barcode.Text = "Артикул";
-            this.Barcode.Width = 250;
+            this.Barcode.Width = 129;
             // 
             // Count
             // 
