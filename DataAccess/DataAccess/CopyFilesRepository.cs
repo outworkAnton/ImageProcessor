@@ -307,13 +307,10 @@ namespace DataAccess
             {
                 if (IsDestinationDirectorySet())
                 {
-                    IReadOnlyCollection<QuickIOFileInfo> jsonFiles = null;
+                    string jsonFilePath = null;
                     try
                     {
-                        jsonFiles = (await _destinationDirectory
-                            .EnumerateFilesAsync("*.json", SearchOption.TopDirectoryOnly, QuickIOEnumerateOptions.SuppressAllExceptions)
-                            .ConfigureAwait(false))?
-                            .ToArray();
+                        jsonFilePath = Directory.GetFiles(_destinationDirectory.FullName, "*.json", SearchOption.TopDirectoryOnly).First();
                     }
                     catch
                     {
@@ -324,10 +321,7 @@ namespace DataAccess
                         return;
                     }
 
-                    await jsonFiles
-                        .FirstOrDefault()
-                        .WriteAllTextAsync(filesList)
-                        .ConfigureAwait(false);
+                    File.WriteAllText(jsonFilePath, filesList);
                 }
             }
             catch (Exception ex)
