@@ -63,6 +63,26 @@ namespace BulkCopier.Properties {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap iconfinder_add_cross_new_plus_create_392530 {
+            get {
+                object obj = ResourceManager.GetObject("iconfinder_add_cross_new_plus_create_392530", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap iconfinder_business_finance_money_27_2784260 {
+            get {
+                object obj = ResourceManager.GetObject("iconfinder_business_finance_money-27_2784260", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap iconfinder_next02_3706885 {
             get {
                 object obj = ResourceManager.GetObject("iconfinder_next02_3706885", resourceCulture);
@@ -73,9 +93,9 @@ namespace BulkCopier.Properties {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap iconfinder_plus_1646001 {
+        internal static System.Drawing.Bitmap iconfinder_Printer_and_Fax_51399 {
             get {
-                object obj = ResourceManager.GetObject("iconfinder_plus_1646001", resourceCulture);
+                object obj = ResourceManager.GetObject("iconfinder_Printer and Fax_51399", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -83,9 +103,9 @@ namespace BulkCopier.Properties {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap iconfinder_printer_39263 {
+        internal static System.Drawing.Bitmap iconfinder_Settings_gear_setting_tools_392496 {
             get {
-                object obj = ResourceManager.GetObject("iconfinder_printer_39263", resourceCulture);
+                object obj = ResourceManager.GetObject("iconfinder_Settings_gear_setting_tools_392496", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

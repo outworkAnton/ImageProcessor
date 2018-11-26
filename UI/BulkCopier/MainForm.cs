@@ -20,6 +20,7 @@ namespace BulkCopier
         private List<ProductImage> _foundImages = new List<ProductImage>();
         private IEnumerator<ProductImage> _foundImagesEnumerator;
         private ObservableCollection<ProductImage> _processedImages = new ObservableCollection<ProductImage>();
+        private IEnumerator<ProductImage> _processedImagesEnumerator;
 
         public MainForm(ICopyFilesService copyFileService)
         {
@@ -694,40 +695,66 @@ namespace BulkCopier
             ResetToNewOrder();
         }
 
-        private void Print_Click(object sender, EventArgs e)
-        {
-            printPreviewDialog1.Document = printDocument1;
-            printPreviewDialog1.ShowDialog();
-        }
-
         private void printDocument1_PrintPage(object sender, PrintPageEventArgs e)
         {
-            var img = Image.FromFile("D:\\Foto.jpg");
-            Point loc = new Point(100, 100);
-            e.Graphics.DrawImage(img, loc);
+            var columnsPerPage = Properties.Settings.Default.PrintColumns;
+            var rowsPerPage = Properties.Settings.Default.PrintRows;
+            var columnWidth = e.MarginBounds.Width / columnsPerPage;
+            var rowHeight = e.MarginBounds.Height / rowsPerPage;
+            var rectSize = new Size(columnWidth - 5, rowHeight - 5);
+            var currentPoint = new Point(e.MarginBounds.X, e.MarginBounds.Y);
+            var rectangle = new Rectangle(currentPoint, rectSize);
 
-            int charactersOnPage = 0;
-            int linesPerPage = 0;
+            for (int row = 1; row < rowsPerPage; row++)
+            {
+                for (int column = 1; column < columnsPerPage; column++)
+                {
+                    if (_processedImagesEnumerator.MoveNext())
+                    {
+                        var img = Image.FromFile(_processedImagesEnumerator.Current.Path);
+                        e.Graphics.DrawImage(img, rectangle);
+                        currentPoint = new Point(currentPoint.X + columnWidth, currentPoint.Y);
+                        rectangle = new Rectangle(currentPoint, rectSize);
+                    }
+                    else
+                    {
+                        e.HasMorePages = false;
+                    }
+
+                }
+            }
 
             // Sets the value of charactersOnPage to the number of characters 
             // of stringToPrint that will fit within the bounds of the page.
-            e.Graphics.MeasureString(stringToPrint, this.Font,
-                e.MarginBounds.Size, StringFormat.GenericTypographic,
-                out charactersOnPage, out linesPerPage);
+            //e.Graphics.MeasureString(stringToPrint, this.Font,
+            //    e.MarginBounds.Size, StringFormat.GenericTypographic,
+            //    out charactersOnPage, out linesPerPage);
 
-            // Draws the string within the bounds of the page.
-            e.Graphics.DrawString(stringToPrint, this.Font, Brushes.Black,
-            e.MarginBounds, StringFormat.GenericTypographic);
+            //// Draws the string within the bounds of the page.
+            //e.Graphics.DrawString(stringToPrint, this.Font, Brushes.Black,
+            //e.MarginBounds, StringFormat.GenericTypographic);
 
-            // Remove the portion of the string that has been printed.
-            stringToPrint = stringToPrint.Substring(charactersOnPage);
+            //// Remove the portion of the string that has been printed.
+            //stringToPrint = stringToPrint.Substring(charactersOnPage);
 
-            // Check to see if more pages are to be printed.
-            e.HasMorePages = (stringToPrint.Length > 0);
+            //// Check to see if more pages are to be printed.
+            //e.HasMorePages = (stringToPrint.Length > 0);
 
-            // If there are no more pages, reset the string to be printed.
-            if (!e.HasMorePages)
-                stringToPrint = documentContents;
+            //// If there are no more pages, reset the string to be printed.
+            //if (!e.HasMorePages)
+            //    stringToPrint = documentContents;
+        }
+
+        private void Print_ButtonClick(object sender, EventArgs e)
+        {
+            printDocument1.Print();
+        }
+
+        private void Preview_Click(object sender, EventArgs e)
+        {
+            _processedImagesEnumerator = _processedImages?.GetEnumerator() ?? throw new ArgumentNullException("Список изображений пуст и не может быть распечатан");
+            printPreviewDialog1.Document = printDocument1;
+            printPreviewDialog1.ShowDialog();
         }
     }
 }

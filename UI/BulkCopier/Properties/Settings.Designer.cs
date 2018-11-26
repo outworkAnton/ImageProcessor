@@ -82,5 +82,29 @@ namespace BulkCopier.Properties {
                 this["FormTopPos"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public int PrintColumns {
+            get {
+                return ((int)(this["PrintColumns"]));
+            }
+            set {
+                this["PrintColumns"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public int PrintRows {
+            get {
+                return ((int)(this["PrintRows"]));
+            }
+            set {
+                this["PrintRows"] = value;
+            }
+        }
     }
 }
