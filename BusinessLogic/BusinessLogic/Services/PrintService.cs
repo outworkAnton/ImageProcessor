@@ -3,6 +3,8 @@ using BusinessLogic.Contract.Models;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Drawing.Printing;
 using System.Linq;
 
@@ -42,7 +44,7 @@ namespace BusinessLogic.Services
             for (var page = 1; page <= imagesPerPage; page++)
             {
                 var grid = new Bitmap((int)Math.Ceiling(_prinableArea.Width), (int)Math.Ceiling(_prinableArea.Height))
-                    .Clone(_prinableArea, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                    .Clone(_prinableArea, PixelFormat.Format32bppArgb);
                 var canvas = Graphics.FromImage(grid);
 
                 for (int row = 0; row < _rows - 1; row++)
@@ -55,37 +57,52 @@ namespace BusinessLogic.Services
                         currentPoint = new PointF(startPoint.X + (column * columnWidth), currentPoint.Y);
                         frame = new RectangleF(currentPoint, cellSize);
 
-                        try
+                        if (_images.Any())
                         {
                             var productImage = _images.ElementAt(0);
-                            var image = Image.FromFile(productImage.Path);
-                            if (productImage.Count > 1)
-                            {
-                                Bitmap newImage = new Bitmap(image.Width, image.Height + 20);
-                                using (Graphics g = Graphics.FromImage(newImage))
-                                {
-                                    Rectangle rect = new Rectangle(0, 0, image.Width, image.Height);
-                                    g.DrawImageUnscaledAndClipped(image, rect);
-                                    g.FillRectangle(new SolidBrush(Color.White), 0, image.Height, newImage.Width, 20);
-                                    Font font = new Font("Calibri", 72);
-                                    PointF point = new PointF(image.Width/2, 0);
-                                    g.DrawString(productImage.Count.ToString(), font, Brushes.Black, point);
-                                }
-                                canvas.DrawImage(newImage, frame);
-                            }
-                            else
-                            {
-                                canvas.DrawImage(image, frame);
-                            }
+                            var image = ScaleImage(Image.FromFile(productImage.Path), (int)Math.Ceiling(frame.Width));
+                            canvas.DrawImage(image, currentPoint);
                             _images.RemoveAt(0);
                         }
-                        catch
+                        else
                         {
                             break;
                         }
                     }
                 }
                 _pages.Add(grid); 
+            }
+        }
+
+        private Image ScaleImage(Image source, int width)
+        {
+            try
+            {
+                double q = (double)source.Width / width;
+                int height = (int)Math.Round(source.Height / q);
+
+                var destRect = new Rectangle(0, 0, width, height);
+                var dest = new Bitmap(width, height);
+                dest.SetResolution(source.HorizontalResolution, source.VerticalResolution);
+                using (var graphics = Graphics.FromImage(dest))
+                {
+                    graphics.CompositingMode = CompositingMode.SourceCopy;
+                    graphics.CompositingQuality = CompositingQuality.HighQuality;
+                    graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    graphics.SmoothingMode = SmoothingMode.HighQuality;
+                    graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                    using (var wrapMode = new ImageAttributes())
+                    {
+                        wrapMode.SetWrapMode(WrapMode.TileFlipXY);
+                        graphics.DrawImage(source, destRect, 0, 0, source.Width, source.Height, GraphicsUnit.Pixel, wrapMode);
+                    }
+                }
+                return dest;
+            }
+            catch
+            {
+                return source;
             }
         }
 

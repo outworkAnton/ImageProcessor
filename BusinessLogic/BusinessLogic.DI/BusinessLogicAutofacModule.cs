@@ -14,6 +14,9 @@ namespace BusinessLogic.DI
             builder.RegisterType<PrintService>()
                 .As<IPrintService>()
                 .InstancePerLifetimeScope();
+            builder.RegisterType<ProcessImagesService>()
+                .As<IProcessImagesService>()
+                .InstancePerLifetimeScope();
         }
     }
 }

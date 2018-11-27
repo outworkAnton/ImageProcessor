@@ -93,6 +93,16 @@ namespace BulkCopier.Properties {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap iconfinder_play_1348648 {
+            get {
+                object obj = ResourceManager.GetObject("iconfinder_play_1348648", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap iconfinder_Printer_and_Fax_51399 {
             get {
                 object obj = ResourceManager.GetObject("iconfinder_Printer and Fax_51399", resourceCulture);

@@ -10,6 +10,7 @@ namespace BusinessLogic.Contract.Interfaces
         Task<int> FindAllFiles();
         void SetSourceDirectory(string path);
         Task SetDestinationDirectory(string path);
+        string GetDestinationDirectoryPath();
         Task<IReadOnlyCollection<ProductImage>> FindFiles(string filename);
         Task<string> CopyFile(string id);
         bool IsSourceDirectorySet();

@@ -329,5 +329,10 @@ namespace DataAccess
                 throw new IOException(ex.Message);
             }
         }
+
+        public string GetDestinationDirectoryPath()
+        {
+            return IsDestinationDirectorySet() ? _destinationDirectory.FullName : string.Empty;
+        }
     }
 }

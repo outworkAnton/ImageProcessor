@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using BusinessLogic.Contract.Interfaces;
 using BusinessLogic.Contract.Models;
 using System.Drawing.Printing;
+using BusinessLogic.Contract;
 
 namespace BulkCopier
 {
@@ -20,12 +21,14 @@ namespace BulkCopier
         private readonly IPrintService _printService;
         private List<ProductImage> _foundImages = new List<ProductImage>();
         private IEnumerator<ProductImage> _foundImagesEnumerator;
-        private ObservableCollection<ProductImage> _processedImages = new ObservableCollection<ProductImage>();
+        private ObservableCollection<ProductImage> _copiedImages = new ObservableCollection<ProductImage>();
+        private readonly IProcessImagesService _processImagesService;
 
-        public MainForm(ICopyFilesService copyFileService, IPrintService printService)
+        public MainForm(ICopyFilesService copyFileService, IPrintService printService, IProcessImagesService processImagesService)
         {
             _copyFileService = copyFileService ?? throw new ArgumentNullException(nameof(copyFileService));
             _printService = printService ?? throw new ArgumentNullException(nameof(printService));
+            _processImagesService = processImagesService ?? throw new ArgumentNullException(nameof(processImagesService));
             InitializeComponent();
         }
 
@@ -45,11 +48,11 @@ namespace BulkCopier
         {
             try
             {
-                BarcodeCountLabel.Text = _processedImages.Count.ToString();
-                ProductCountLabel.Text = _processedImages.Sum(x => x.Count).ToString();
-                if (_processedImages.Any())
+                BarcodeCountLabel.Text = _copiedImages.Count.ToString();
+                ProductCountLabel.Text = _copiedImages.Sum(x => x.Count).ToString();
+                if (_copiedImages.Any())
                 {
-                    await _copyFileService.SaveProcessedImagesList(_processedImages);
+                    await _copyFileService.SaveProcessedImagesList(_copiedImages);
                 }
             }
             catch (IOException io)
@@ -173,11 +176,11 @@ namespace BulkCopier
                     InputBarcodeBox.Visible = _copyFileService.IsSourceDirectorySet();
                     DestinationBox.ReadOnly = true;
                     ProductImagesList.Items.Clear();
-                    _processedImages = await _copyFileService.LoadFromDestinationDirectory();
-                    _processedImages.CollectionChanged += ProcessedImages_Change;
-                    if (_processedImages.Any())
+                    _copiedImages = await _copyFileService.LoadFromDestinationDirectory();
+                    _copiedImages.CollectionChanged += ProcessedImages_Change;
+                    if (_copiedImages.Any())
                     {
-                        ProductImagesList.Items.AddRange(ConvertProcessedToList(_processedImages));
+                        ProductImagesList.Items.AddRange(ConvertProcessedToList(_copiedImages));
                         FixProductListCount();
                         await RecalculateProcessedImagesCollection();
                     }
@@ -297,7 +300,7 @@ namespace BulkCopier
                     return;
                 }
                 newFilePath = await _copyFileService.CopyFile(_foundImagesEnumerator.Current.Id);
-                _processedImages.Insert(0, new ProductImage(_foundImagesEnumerator.Current.Id, newFilePath));
+                _copiedImages.Insert(0, new ProductImage(_foundImagesEnumerator.Current.Id, newFilePath));
                 ProductImagesList.Items.Insert(0, new ListViewItem(new[] { _foundImagesEnumerator.Current.Id, "" }));
             }
             catch (ArgumentException a)
@@ -306,7 +309,7 @@ namespace BulkCopier
             }
             catch (FileNotFoundException fnf)
             {
-                _processedImages.Remove(_processedImages.FirstOrDefault(img => img.Id == _foundImagesEnumerator.Current.Id));
+                _copiedImages.Remove(_copiedImages.FirstOrDefault(img => img.Id == _foundImagesEnumerator.Current.Id));
                 ProductImagesList.Items.Find(_foundImagesEnumerator.Current.Id, false).FirstOrDefault().Remove();
                 throw new FileNotFoundException("Не удалось скопировать файл в целевую папку\n" + fnf.Message);
             }
@@ -320,9 +323,9 @@ namespace BulkCopier
                 {
                     if (!string.IsNullOrWhiteSpace(_foundImagesEnumerator.Current.Id))
                     {
-                        if (!_processedImages.Any(img => img.Id == _foundImagesEnumerator.Current.Id) && !string.IsNullOrWhiteSpace(newFilePath))
+                        if (!_copiedImages.Any(img => img.Id == _foundImagesEnumerator.Current.Id) && !string.IsNullOrWhiteSpace(newFilePath))
                         {
-                            _processedImages.Insert(0, new ProductImage(_foundImagesEnumerator.Current.Id, newFilePath));
+                            _copiedImages.Insert(0, new ProductImage(_foundImagesEnumerator.Current.Id, newFilePath));
                         }
                         if (!ProductImagesList.Items.Find(_foundImagesEnumerator.Current.Id, false).Any())
                         {
@@ -377,7 +380,7 @@ namespace BulkCopier
 
                         case Keys.Delete:
                             await _copyFileService.DeleteFile(selectedItemKey.Text);
-                            _processedImages.Remove(_processedImages.FirstOrDefault(img => img.Id == selectedItemKey.Text));
+                            _copiedImages.Remove(_copiedImages.FirstOrDefault(img => img.Id == selectedItemKey.Text));
                             ProductImagesList.Items.Remove(ProductImagesList.Items[ProductImagesList.SelectedIndices[0]]);
                             await RecalculateProcessedImagesCollection();
                             return;
@@ -394,7 +397,7 @@ namespace BulkCopier
                         count = cnt;
                     }
 
-                    _processedImages.First(img => img.Id == selectedItemKey.Text).Count = count;
+                    _copiedImages.First(img => img.Id == selectedItemKey.Text).Count = count;
                     await RecalculateProcessedImagesCollection();
                 }
             }
@@ -414,7 +417,7 @@ namespace BulkCopier
             {
                 if (e.IsSelected)
                 {
-                    var imagePath = _processedImages.First(img => img.Id == e.Item.SubItems[0].Text).Path;
+                    var imagePath = _copiedImages.First(img => img.Id == e.Item.SubItems[0].Text).Path;
                     if (!File.Exists(imagePath))
                     {
                         throw new FileNotFoundException("Файл изображения не найден");
@@ -436,7 +439,7 @@ namespace BulkCopier
                 MessageBox.Show("Ошибка загрузки изображения\n" + ex.Message);
                 PictureBox.Image = null;
                 PictureBox.ImageLocation = null;
-                _processedImages.Remove(_processedImages.FirstOrDefault(img => img.Id == e.Item.Text));
+                _copiedImages.Remove(_copiedImages.FirstOrDefault(img => img.Id == e.Item.Text));
                 ProductImagesList.Items.Remove(ProductImagesList.Items[ProductImagesList.SelectedIndices[0]]);
                 await RecalculateProcessedImagesCollection();
                 ProductImagesList.SelectedItems.Clear();
@@ -481,7 +484,7 @@ namespace BulkCopier
                 ProductImagesList.Items.Clear();
                 BarcodeCountLabel.Text = "0";
                 ProductCountLabel.Text = "0";
-                _processedImages.Clear();
+                _copiedImages.Clear();
                 _copyFileService.SetDestinationDirectory(null);
             }
             catch (Exception ex)
@@ -544,7 +547,7 @@ namespace BulkCopier
                 if (ProductImagesList.SelectedIndices.Count > 0)
                 {
                     var selectedItemKey = ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[0];
-                    var imagePath = _processedImages.First(img => img.Id == selectedItemKey.Text).Path;
+                    var imagePath = _copiedImages.First(img => img.Id == selectedItemKey.Text).Path;
                     PictureBox.LoadAsync(imagePath);
                 }
             }
@@ -573,7 +576,7 @@ namespace BulkCopier
                 if (_foundImagesEnumerator != null)
                 {
                     await ProcessProductImage();
-                    PictureBox.ImageLocation = _processedImages.First(img => img.Id == _foundImagesEnumerator?.Current?.Id).Path;
+                    PictureBox.ImageLocation = _copiedImages.First(img => img.Id == _foundImagesEnumerator?.Current?.Id).Path;
                 }
                 var filePath = PictureBox.ImageLocation;
                 ProcessStartInfo Info = new ProcessStartInfo()
@@ -705,18 +708,25 @@ namespace BulkCopier
 
         private void Print_ButtonClick(object sender, EventArgs e)
         {
-            printDocument1.Print();
+            if (_copiedImages.Any())
+            {
+                printDocument1.Print();
+            }
         }
 
         private void Preview_Click(object sender, EventArgs e)
         {
-            printPreviewDialog1.Document = printDocument1;
-            printPreviewDialog1.ShowDialog();
+            if (_copiedImages.Any())
+            {
+                printPreviewDialog1.Document = printDocument1;
+                ((Form)printPreviewDialog1).WindowState = FormWindowState.Maximized;
+                printPreviewDialog1.ShowDialog(); 
+            }
         }
 
         private void printDocument1_BeginPrint(object sender, PrintEventArgs e)
         {
-            printDocument1.DocumentName = new DirectoryInfo(DestinationBox.Text).Name;
+            printDocument1.DocumentName = new DirectoryInfo(_copyFileService.GetDestinationDirectoryPath()).Name;
             printDocument1.DefaultPageSettings = new PageSettings()
             {
                 Color = true,
@@ -724,7 +734,7 @@ namespace BulkCopier
                 Margins = new Margins(1, 1, 1, 1)
             };
             _printService.SetPrintSettings(printDocument1, 
-                _processedImages.ToArray(), 
+                _copiedImages.ToArray(), 
                 Properties.Settings.Default.PrintColumns, 
                 Properties.Settings.Default.PrintRows);
         }
@@ -732,6 +742,15 @@ namespace BulkCopier
         private void printDocument1_EndPrint(object sender, PrintEventArgs e)
         {
             _printService.ResetPrintSettings();
+        }
+
+        private void Proceed_ButtonClick(object sender, EventArgs e)
+        {
+            var imagesToProcess = _copiedImages.Where(img => img.Count > 1);
+            if (imagesToProcess.Any())
+            {
+                _processImagesService.Process(imagesToProcess.ToArray()); 
+            }
         }
     }
 }

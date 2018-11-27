@@ -8,6 +8,7 @@ namespace DataAccess.Contract.Interfaces
     {
         void SetSourceDirectory(string path);
         Task SetDestinationDirectory(string path);
+        string GetDestinationDirectoryPath();
         Task<string> CopyFile(string filename);
         Task<int> FindAllFiles();
         Task<IReadOnlyCollection<QuickIOFileInfo>> FindFile(string filename);

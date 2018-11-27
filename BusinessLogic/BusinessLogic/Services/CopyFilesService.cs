@@ -165,5 +165,10 @@ namespace BusinessLogic.Services
                 throw new IOException(io.Message);
             }
         }
+
+        public string GetDestinationDirectoryPath()
+        {
+            return _copyFilesRepository.GetDestinationDirectoryPath();
+        }
     }
 }
