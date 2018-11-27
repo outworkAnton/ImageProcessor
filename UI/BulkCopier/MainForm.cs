@@ -17,14 +17,15 @@ namespace BulkCopier
     public partial class MainForm : Form
     {
         private readonly ICopyFilesService _copyFileService;
+        private readonly IPrintService _printService;
         private List<ProductImage> _foundImages = new List<ProductImage>();
         private IEnumerator<ProductImage> _foundImagesEnumerator;
         private ObservableCollection<ProductImage> _processedImages = new ObservableCollection<ProductImage>();
-        private IEnumerator<ProductImage> _processedImagesEnumerator;
 
-        public MainForm(ICopyFilesService copyFileService)
+        public MainForm(ICopyFilesService copyFileService, IPrintService printService)
         {
             _copyFileService = copyFileService ?? throw new ArgumentNullException(nameof(copyFileService));
+            _printService = printService ?? throw new ArgumentNullException(nameof(printService));
             InitializeComponent();
         }
 
@@ -697,52 +698,9 @@ namespace BulkCopier
 
         private void printDocument1_PrintPage(object sender, PrintPageEventArgs e)
         {
-            var columnsPerPage = Properties.Settings.Default.PrintColumns;
-            var rowsPerPage = Properties.Settings.Default.PrintRows;
-            var columnWidth = e.MarginBounds.Width / columnsPerPage;
-            var rowHeight = e.MarginBounds.Height / rowsPerPage;
-            var rectSize = new Size(columnWidth - 5, rowHeight - 5);
-            var currentPoint = new Point(e.MarginBounds.X, e.MarginBounds.Y);
-            var rectangle = new Rectangle(currentPoint, rectSize);
-
-            for (int row = 1; row < rowsPerPage; row++)
-            {
-                for (int column = 1; column < columnsPerPage; column++)
-                {
-                    if (_processedImagesEnumerator.MoveNext())
-                    {
-                        var img = Image.FromFile(_processedImagesEnumerator.Current.Path);
-                        e.Graphics.DrawImage(img, rectangle);
-                        currentPoint = new Point(currentPoint.X + columnWidth, currentPoint.Y);
-                        rectangle = new Rectangle(currentPoint, rectSize);
-                    }
-                    else
-                    {
-                        e.HasMorePages = false;
-                    }
-
-                }
-            }
-
-            // Sets the value of charactersOnPage to the number of characters 
-            // of stringToPrint that will fit within the bounds of the page.
-            //e.Graphics.MeasureString(stringToPrint, this.Font,
-            //    e.MarginBounds.Size, StringFormat.GenericTypographic,
-            //    out charactersOnPage, out linesPerPage);
-
-            //// Draws the string within the bounds of the page.
-            //e.Graphics.DrawString(stringToPrint, this.Font, Brushes.Black,
-            //e.MarginBounds, StringFormat.GenericTypographic);
-
-            //// Remove the portion of the string that has been printed.
-            //stringToPrint = stringToPrint.Substring(charactersOnPage);
-
-            //// Check to see if more pages are to be printed.
-            //e.HasMorePages = (stringToPrint.Length > 0);
-
-            //// If there are no more pages, reset the string to be printed.
-            //if (!e.HasMorePages)
-            //    stringToPrint = documentContents;
+            var page = _printService.GetPage();
+            e.Graphics.DrawImage(page, e.PageSettings.PrintableArea);
+            e.HasMorePages = _printService.HasNextPage();
         }
 
         private void Print_ButtonClick(object sender, EventArgs e)
@@ -752,9 +710,28 @@ namespace BulkCopier
 
         private void Preview_Click(object sender, EventArgs e)
         {
-            _processedImagesEnumerator = _processedImages?.GetEnumerator() ?? throw new ArgumentNullException("Список изображений пуст и не может быть распечатан");
             printPreviewDialog1.Document = printDocument1;
             printPreviewDialog1.ShowDialog();
+        }
+
+        private void printDocument1_BeginPrint(object sender, PrintEventArgs e)
+        {
+            printDocument1.DocumentName = new DirectoryInfo(DestinationBox.Text).Name;
+            printDocument1.DefaultPageSettings = new PageSettings()
+            {
+                Color = true,
+                Landscape = false,
+                Margins = new Margins(1, 1, 1, 1)
+            };
+            _printService.SetPrintSettings(printDocument1, 
+                _processedImages.ToArray(), 
+                Properties.Settings.Default.PrintColumns, 
+                Properties.Settings.Default.PrintRows);
+        }
+
+        private void printDocument1_EndPrint(object sender, PrintEventArgs e)
+        {
+            _printService.ResetPrintSettings();
         }
     }
 }

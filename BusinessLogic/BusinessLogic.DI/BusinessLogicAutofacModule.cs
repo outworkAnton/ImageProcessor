@@ -11,6 +11,9 @@ namespace BusinessLogic.DI
             builder.RegisterType<CopyFilesService>()
                 .As<ICopyFilesService>()
                 .InstancePerLifetimeScope();
+            builder.RegisterType<PrintService>()
+                .As<IPrintService>()
+                .InstancePerLifetimeScope();
         }
     }
 }

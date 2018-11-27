@@ -32,11 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="SchwabenCode.QuickIO, Version=2.6.2.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\..\Users\Mazurov Anton\.nuget\packages\quickio.net\2.6.2\lib\net45\SchwabenCode.QuickIO.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -48,6 +46,7 @@
     <Compile Include="FileToModelConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\CopyFilesService.cs" />
+    <Compile Include="Services\PrintService.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\DataAccess\DataAccess.Contract\DataAccess.Contract.csproj">
