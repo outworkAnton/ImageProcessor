@@ -14,5 +14,6 @@ namespace BusinessLogic.Contract.Models
         public string Id { get; private set; }
         public string Path { get; private set; }
         public int Count { get; set; }
+        public bool Processed { get; set; }
     }
 }

@@ -190,10 +190,6 @@ namespace BulkCopier
             {
                 MessageBox.Show("Загрузка списка изображений из сохраненного файла со списком не удалась\n" + fl.Message);
             }
-            catch (IOException io)
-            {
-                MessageBox.Show("Не удалось получить список файлов в целевой папке\n" + io.Message);
-            }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
@@ -708,19 +704,25 @@ namespace BulkCopier
 
         private void Print_ButtonClick(object sender, EventArgs e)
         {
-            if (_copiedImages.Any())
-            {
-                printDocument1.Print();
-            }
-        }
-
-        private void Preview_Click(object sender, EventArgs e)
-        {
+            ProcessImages();
             if (_copiedImages.Any())
             {
                 printPreviewDialog1.Document = printDocument1;
                 ((Form)printPreviewDialog1).WindowState = FormWindowState.Maximized;
-                printPreviewDialog1.ShowDialog(); 
+                printPreviewDialog1.ShowDialog();
+            }
+        }
+
+        private void ProcessImages()
+        {
+            var imagesToProcess = _copiedImages.Where(img => (img.Count > 1) && !img.Processed);
+            if (imagesToProcess.Any())
+            {
+                _processImagesService.Process(imagesToProcess.ToArray());
+                foreach (var productImage in imagesToProcess)
+                {
+                    productImage.Processed = true;
+                }
             }
         }
 
@@ -742,15 +744,6 @@ namespace BulkCopier
         private void printDocument1_EndPrint(object sender, PrintEventArgs e)
         {
             _printService.ResetPrintSettings();
-        }
-
-        private void Proceed_ButtonClick(object sender, EventArgs e)
-        {
-            var imagesToProcess = _copiedImages.Where(img => img.Count > 1);
-            if (imagesToProcess.Any())
-            {
-                _processImagesService.Process(imagesToProcess.ToArray()); 
-            }
         }
     }
 }

@@ -73,29 +73,9 @@ namespace BulkCopier.Properties {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap iconfinder_business_finance_money_27_2784260 {
-            get {
-                object obj = ResourceManager.GetObject("iconfinder_business_finance_money-27_2784260", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap iconfinder_next02_3706885 {
             get {
                 object obj = ResourceManager.GetObject("iconfinder_next02_3706885", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap iconfinder_play_1348648 {
-            get {
-                object obj = ResourceManager.GetObject("iconfinder_play_1348648", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

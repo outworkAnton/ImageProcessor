@@ -58,8 +58,6 @@
             this.ResetOrder = new System.Windows.Forms.ToolStripSplitButton();
             this.Print = new System.Windows.Forms.ToolStripSplitButton();
             this.настройкаToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.Preview = new System.Windows.Forms.ToolStripMenuItem();
-            this.Proceed = new System.Windows.Forms.ToolStripSplitButton();
             this.NextPicBtn = new System.Windows.Forms.Button();
             this.PictureBox = new System.Windows.Forms.PictureBox();
             this.MainTable.SuspendLayout();
@@ -345,8 +343,7 @@
             this.toolStripStatusLabel3,
             this.ProductCountLabel,
             this.ResetOrder,
-            this.Print,
-            this.Proceed});
+            this.Print});
             this.StatusBar.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
             this.StatusBar.Location = new System.Drawing.Point(0, 439);
             this.StatusBar.Name = "StatusBar";
@@ -392,8 +389,7 @@
             // 
             this.Print.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.Print.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.настройкаToolStripMenuItem,
-            this.Preview});
+            this.настройкаToolStripMenuItem});
             this.Print.Image = global::BulkCopier.Properties.Resources.iconfinder_Printer_and_Fax_51399;
             this.Print.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.Print.Name = "Print";
@@ -405,27 +401,8 @@
             // 
             this.настройкаToolStripMenuItem.Image = global::BulkCopier.Properties.Resources.iconfinder_Settings_gear_setting_tools_392496;
             this.настройкаToolStripMenuItem.Name = "настройкаToolStripMenuItem";
-            this.настройкаToolStripMenuItem.Size = new System.Drawing.Size(233, 22);
+            this.настройкаToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.настройкаToolStripMenuItem.Text = "Настройка";
-            // 
-            // Preview
-            // 
-            this.Preview.Image = global::BulkCopier.Properties.Resources.iconfinder_business_finance_money_27_2784260;
-            this.Preview.Name = "Preview";
-            this.Preview.Size = new System.Drawing.Size(233, 22);
-            this.Preview.Text = "Предварительный просмотр";
-            this.Preview.Click += new System.EventHandler(this.Preview_Click);
-            // 
-            // Proceed
-            // 
-            this.Proceed.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.Proceed.Image = global::BulkCopier.Properties.Resources.iconfinder_play_1348648;
-            this.Proceed.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.Proceed.Name = "Proceed";
-            this.Proceed.Size = new System.Drawing.Size(99, 20);
-            this.Proceed.Text = "Обработка";
-            this.Proceed.ToolTipText = "Проставить количество товара на изображении";
-            this.Proceed.ButtonClick += new System.EventHandler(this.Proceed_ButtonClick);
             // 
             // NextPicBtn
             // 
@@ -525,8 +502,6 @@
         private System.Windows.Forms.ToolStripSplitButton ResetOrder;
         private System.Windows.Forms.ToolStripSplitButton Print;
         private System.Windows.Forms.ToolStripMenuItem настройкаToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem Preview;
-        private System.Windows.Forms.ToolStripSplitButton Proceed;
     }
 }
 

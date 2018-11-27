@@ -147,9 +147,9 @@ namespace BusinessLogic.Services
             {
                 throw new FileLoadException(fl.Message);
             }
-            catch (IOException io)
+            catch (IOException)
             {
-                throw new IOException(io.Message);
+                return new ObservableCollection<ProductImage>();
             }
         }
 

@@ -117,11 +117,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="if_free-15_463002.ico" />
-    <None Include="Properties\iconfinder_play_1348648.png" />
     <None Include="Properties\iconfinder_add_cross_new_plus_create_392530.png" />
     <None Include="Properties\iconfinder_Settings_gear_setting_tools_392496.png" />
     <None Include="Properties\iconfinder_Printer and Fax_51399.png" />
-    <None Include="Properties\iconfinder_business_finance_money-27_2784260.png" />
     <None Include="Properties\iconfinder_next02_3706885.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
