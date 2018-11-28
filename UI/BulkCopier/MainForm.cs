@@ -11,7 +11,6 @@ using System.Windows.Forms;
 using BusinessLogic.Contract.Interfaces;
 using BusinessLogic.Contract.Models;
 using System.Drawing.Printing;
-using BusinessLogic.Contract;
 
 namespace BulkCopier
 {
@@ -32,11 +31,11 @@ namespace BulkCopier
             InitializeComponent();
         }
 
-        private async void ProcessedImages_Change(object sender, NotifyCollectionChangedEventArgs args)
+        private async void CopiedImages_Change(object sender, NotifyCollectionChangedEventArgs args)
         {
             try
             {
-                await RecalculateProcessedImagesCollection();
+                await RecalculateCopiedImagesCollection();
             }
             catch (Exception ex)
             {
@@ -44,7 +43,7 @@ namespace BulkCopier
             }
         }
 
-        private async Task RecalculateProcessedImagesCollection()
+        private async Task RecalculateCopiedImagesCollection()
         {
             try
             {
@@ -177,12 +176,12 @@ namespace BulkCopier
                     DestinationBox.ReadOnly = true;
                     ProductImagesList.Items.Clear();
                     _copiedImages = await _copyFileService.LoadFromDestinationDirectory();
-                    _copiedImages.CollectionChanged += ProcessedImages_Change;
+                    _copiedImages.CollectionChanged += CopiedImages_Change;
                     if (_copiedImages.Any())
                     {
-                        ProductImagesList.Items.AddRange(ConvertProcessedToList(_copiedImages));
+                        ProductImagesList.Items.AddRange(ConvertCopiedToList(_copiedImages));
                         FixProductListCount();
-                        await RecalculateProcessedImagesCollection();
+                        await RecalculateCopiedImagesCollection();
                     }
                 }
             }
@@ -199,7 +198,7 @@ namespace BulkCopier
             }
         }
 
-        private ListViewItem[] ConvertProcessedToList(ObservableCollection<ProductImage> processedImages)
+        private ListViewItem[] ConvertCopiedToList(ObservableCollection<ProductImage> processedImages)
         {
             try
             {
@@ -378,7 +377,7 @@ namespace BulkCopier
                             await _copyFileService.DeleteFile(selectedItemKey.Text);
                             _copiedImages.Remove(_copiedImages.FirstOrDefault(img => img.Id == selectedItemKey.Text));
                             ProductImagesList.Items.Remove(ProductImagesList.Items[ProductImagesList.SelectedIndices[0]]);
-                            await RecalculateProcessedImagesCollection();
+                            await RecalculateCopiedImagesCollection();
                             return;
 
                         default:
@@ -394,7 +393,7 @@ namespace BulkCopier
                     }
 
                     _copiedImages.First(img => img.Id == selectedItemKey.Text).Count = count;
-                    await RecalculateProcessedImagesCollection();
+                    await RecalculateCopiedImagesCollection();
                 }
             }
             catch (IOException io)
@@ -437,7 +436,7 @@ namespace BulkCopier
                 PictureBox.ImageLocation = null;
                 _copiedImages.Remove(_copiedImages.FirstOrDefault(img => img.Id == e.Item.Text));
                 ProductImagesList.Items.Remove(ProductImagesList.Items[ProductImagesList.SelectedIndices[0]]);
-                await RecalculateProcessedImagesCollection();
+                await RecalculateCopiedImagesCollection();
                 ProductImagesList.SelectedItems.Clear();
             }
         }
@@ -702,9 +701,9 @@ namespace BulkCopier
             e.HasMorePages = _printService.HasNextPage();
         }
 
-        private void Print_ButtonClick(object sender, EventArgs e)
+        private async void Print_ButtonClick(object sender, EventArgs e)
         {
-            ProcessImages();
+            await ProcessImages();
             if (_copiedImages.Any())
             {
                 printPreviewDialog1.Document = printDocument1;
@@ -713,7 +712,7 @@ namespace BulkCopier
             }
         }
 
-        private void ProcessImages()
+        private async Task ProcessImages()
         {
             var imagesToProcess = _copiedImages.Where(img => (img.Count > 1) && !img.Processed);
             if (imagesToProcess.Any())
@@ -723,6 +722,7 @@ namespace BulkCopier
                 {
                     productImage.Processed = true;
                 }
+                await RecalculateCopiedImagesCollection();
             }
         }
 

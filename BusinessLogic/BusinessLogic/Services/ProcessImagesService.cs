@@ -1,6 +1,7 @@
 ﻿using BusinessLogic.Contract.Interfaces;
 using BusinessLogic.Contract.Models;
 using Microsoft.WindowsAPICodePack.Shell;
+using Microsoft.WindowsAPICodePack.Shell.PropertySystem;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -40,7 +41,7 @@ namespace BusinessLogic.Services
 
                     g.FillRectangle(new SolidBrush(Color.White), 0, image.Height, newImage.Width, footerHeight);
                     var text = productImage.Count.ToString();
-                    var font = new Font("Calibri", 72F, FontStyle.Regular, GraphicsUnit.Pixel);
+                    var font = new Font("Calibri", 72F, FontStyle.Regular);
                     var drawBrush = new SolidBrush(Color.Black);
                     var format = new StringFormat()
                     {
@@ -52,6 +53,7 @@ namespace BusinessLogic.Services
                 }
                 image.Dispose();
                 newImage.Save(productImage.Path, ImageFormat.Jpeg);
+                ShellFile.FromFilePath(productImage.Path).Properties.System.Keywords.Value = tags;
             }
         }
     }
