@@ -18,42 +18,49 @@ namespace BusinessLogic.Services
     {
         public void Process(IReadOnlyCollection<ProductImage> imagesForProcess)
         {
-            foreach (var productImage in imagesForProcess)
+            try
             {
-                var tags = ShellFile.FromFilePath(productImage.Path).Properties.System.Keywords.Value;
-                var image = Image.FromFile(productImage.Path);
-                var footerHeight = 72;
-                Bitmap newImage = new Bitmap(image.Width, image.Height + footerHeight);
-                var destRect = new Rectangle(0, 0, image.Width, image.Height);
-                newImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
-                using (Graphics g = Graphics.FromImage(newImage))
+                foreach (var productImage in imagesForProcess)
                 {
-                    g.CompositingQuality = CompositingQuality.HighQuality;
-                    g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                    g.SmoothingMode = SmoothingMode.HighQuality;
-                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-
-                    using (var wrapMode = new ImageAttributes())
+                    var tags = ShellFile.FromFilePath(productImage.Path).Properties.System.Keywords.Value;
+                    var image = Image.FromFile(productImage.Path);
+                    var footerHeight = 72;
+                    Bitmap newImage = new Bitmap(image.Width, image.Height + footerHeight);
+                    var destRect = new Rectangle(0, 0, image.Width, image.Height);
+                    newImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
+                    using (Graphics g = Graphics.FromImage(newImage))
                     {
-                        wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-                        g.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+                        g.CompositingQuality = CompositingQuality.HighQuality;
+                        g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                        g.SmoothingMode = SmoothingMode.HighQuality;
+                        g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                        using (var wrapMode = new ImageAttributes())
+                        {
+                            wrapMode.SetWrapMode(WrapMode.TileFlipXY);
+                            g.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+                        }
+
+                        g.FillRectangle(new SolidBrush(Color.White), 0, image.Height, newImage.Width, footerHeight);
+                        var text = productImage.Count.ToString();
+                        var font = new Font("Calibri", 72F, FontStyle.Regular);
+                        var drawBrush = new SolidBrush(Color.Black);
+                        var format = new StringFormat()
+                        {
+                            LineAlignment = StringAlignment.Center,
+                            Alignment = StringAlignment.Center
+                        };
+                        var rect = new RectangleF(0, image.Height, image.Width, footerHeight);
+                        g.DrawString(text, font, drawBrush, rect, format);
                     }
-
-                    g.FillRectangle(new SolidBrush(Color.White), 0, image.Height, newImage.Width, footerHeight);
-                    var text = productImage.Count.ToString();
-                    var font = new Font("Calibri", 72F, FontStyle.Regular);
-                    var drawBrush = new SolidBrush(Color.Black);
-                    var format = new StringFormat()
-                    {
-                        LineAlignment = StringAlignment.Center,
-                        Alignment = StringAlignment.Center
-                    };
-                    var rect = new RectangleF(0, image.Height, image.Width, footerHeight);
-                    g.DrawString(text, font, drawBrush, rect, format);
+                    image.Dispose();
+                    newImage.Save(productImage.Path, ImageFormat.Jpeg);
+                    ShellFile.FromFilePath(productImage.Path).Properties.System.Keywords.Value = tags;
                 }
-                image.Dispose();
-                newImage.Save(productImage.Path, ImageFormat.Jpeg);
-                ShellFile.FromFilePath(productImage.Path).Properties.System.Keywords.Value = tags;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
     }

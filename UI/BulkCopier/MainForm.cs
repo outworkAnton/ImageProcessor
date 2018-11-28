@@ -93,7 +93,7 @@ namespace BulkCopier
             _foundImagesEnumerator = null;
             try
             {
-                _foundImages = (await _copyFileService.FindFiles(InputBarcodeBox.Text))?.ToList() 
+                _foundImages = (await _copyFileService.FindFiles(InputBarcodeBox.Text))?.ToList()
                     ?? throw new IOException("Источник изображений не найден");
 
                 if (_foundImages.Any())
@@ -336,7 +336,7 @@ namespace BulkCopier
                 {
                     throw new Exception("Неизвестная ошибка в работе приложения\n" + ex.Message);
                 }
-                
+
             }
             finally
             {
@@ -703,26 +703,44 @@ namespace BulkCopier
 
         private async void Print_ButtonClick(object sender, EventArgs e)
         {
-            await ProcessImages();
-            if (_copiedImages.Any())
+            try
             {
-                printPreviewDialog1.Document = printDocument1;
-                ((Form)printPreviewDialog1).WindowState = FormWindowState.Maximized;
-                printPreviewDialog1.ShowDialog();
+                await ProcessImages();
+                if (_copiedImages.Any())
+                {
+                    printPreviewDialog1.Document = printDocument1;
+                    ((Form)printPreviewDialog1).WindowState = FormWindowState.Maximized;
+                    printPreviewDialog1.ShowDialog();
+                }
+            }
+            catch (InvalidOperationException io)
+            {
+                MessageBox.Show("Обработка изображения завершилась с ошибкой:\n" + io.Message);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("При печати изображений возникла ошибка:\n" + ex.Message);
             }
         }
 
         private async Task ProcessImages()
         {
-            var imagesToProcess = _copiedImages.Where(img => (img.Count > 1) && !img.Processed);
-            if (imagesToProcess.Any())
+            try
             {
-                _processImagesService.Process(imagesToProcess.ToArray());
-                foreach (var productImage in imagesToProcess)
+                var imagesToProcess = _copiedImages.Where(img => (img.Count > 1) && !img.Processed);
+                if (imagesToProcess.Any())
                 {
-                    productImage.Processed = true;
+                    _processImagesService.Process(imagesToProcess.ToArray());
+                    foreach (var productImage in imagesToProcess)
+                    {
+                        productImage.Processed = true;
+                    }
+                    await RecalculateCopiedImagesCollection();
                 }
-                await RecalculateCopiedImagesCollection();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(ex.Message);
             }
         }
 
@@ -735,9 +753,9 @@ namespace BulkCopier
                 Landscape = false,
                 Margins = new Margins(1, 1, 1, 1)
             };
-            _printService.SetPrintSettings(printDocument1, 
-                _copiedImages.ToArray(), 
-                Properties.Settings.Default.PrintColumns, 
+            _printService.SetPrintSettings(printDocument1,
+                _copiedImages.ToArray(),
+                Properties.Settings.Default.PrintColumns,
                 Properties.Settings.Default.PrintRows);
         }
 

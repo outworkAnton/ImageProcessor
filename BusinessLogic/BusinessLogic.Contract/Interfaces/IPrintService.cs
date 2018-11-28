@@ -9,9 +9,9 @@ namespace BusinessLogic.Contract.Interfaces
     {
         Image GetPage();
         bool HasNextPage();
-        void SetPrintSettings(PrintDocument printDocument, 
-            IReadOnlyCollection<ProductImage> processedImages, 
-            int columnsCount, 
+        void SetPrintSettings(PrintDocument printDocument,
+            IReadOnlyCollection<ProductImage> processedImages,
+            int columnsCount,
             int rowsCount);
         void ResetPrintSettings();
     }

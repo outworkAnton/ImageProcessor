@@ -26,14 +26,14 @@ namespace BusinessLogic.Services
             {
                 GeneratePages();
             }
-            var tmpImg = _pages.ElementAt(0).Clone() as Image;
+            var tmpImg = _pages[0].Clone() as Image;
             _pages.RemoveAt(0);
             return tmpImg;
         }
 
         private void GeneratePages()
         {
-            var imagesPerPage = (int)Math.Ceiling((decimal)_images.Count / (_columns * _rows));
+            var pagesCount = (int)Math.Ceiling((decimal)_images.Count / (_columns * _rows));
             var header = new RectangleF(_prinableArea.X, _prinableArea.Y, _prinableArea.Width, 20);
             var footer = new RectangleF(_prinableArea.Left, _prinableArea.Bottom - 10, _prinableArea.Width, 10);
             var columnWidth = _prinableArea.Width / _columns;
@@ -41,7 +41,7 @@ namespace BusinessLogic.Services
             var cellSize = new SizeF(columnWidth - 5, rowHeight - 5);
             var startPoint = new PointF(_prinableArea.X + 5, _prinableArea.Y + header.Height + 5);
 
-            for (var page = 1; page <= imagesPerPage; page++)
+            for (var page = 1; page <= pagesCount; page++)
             {
                 var grid = new Bitmap((int)Math.Ceiling(_prinableArea.Width), (int)Math.Ceiling(_prinableArea.Height))
                     .Clone(_prinableArea, PixelFormat.Format32bppArgb);
@@ -70,7 +70,7 @@ namespace BusinessLogic.Services
                         }
                     }
                 }
-                _pages.Add(grid); 
+                _pages.Add(grid);
             }
         }
 
