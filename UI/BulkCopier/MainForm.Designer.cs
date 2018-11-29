@@ -377,7 +377,7 @@
             // ResetOrder
             // 
             this.ResetOrder.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.ResetOrder.Image = global::BulkCopier.Properties.Resources.iconfinder_add_cross_new_plus_create_392530;
+            this.ResetOrder.Image = global::BulkCopier.Properties.Resources.New;
             this.ResetOrder.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.ResetOrder.Name = "ResetOrder";
             this.ResetOrder.Size = new System.Drawing.Size(108, 20);
@@ -390,7 +390,7 @@
             this.Print.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.Print.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.настройкаToolStripMenuItem});
-            this.Print.Image = global::BulkCopier.Properties.Resources.iconfinder_Printer_and_Fax_51399;
+            this.Print.Image = global::BulkCopier.Properties.Resources.Print;
             this.Print.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.Print.Name = "Print";
             this.Print.Size = new System.Drawing.Size(78, 20);
@@ -399,7 +399,7 @@
             // 
             // настройкаToolStripMenuItem
             // 
-            this.настройкаToolStripMenuItem.Image = global::BulkCopier.Properties.Resources.iconfinder_Settings_gear_setting_tools_392496;
+            this.настройкаToolStripMenuItem.Image = global::BulkCopier.Properties.Resources.Settings;
             this.настройкаToolStripMenuItem.Name = "настройкаToolStripMenuItem";
             this.настройкаToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.настройкаToolStripMenuItem.Text = "Настройка";
@@ -407,7 +407,7 @@
             // NextPicBtn
             // 
             this.NextPicBtn.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.NextPicBtn.BackgroundImage = global::BulkCopier.Properties.Resources.iconfinder_next02_3706885;
+            this.NextPicBtn.BackgroundImage = global::BulkCopier.Properties.Resources.Next;
             this.NextPicBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.NextPicBtn.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.NextPicBtn.Location = new System.Drawing.Point(196, 3);

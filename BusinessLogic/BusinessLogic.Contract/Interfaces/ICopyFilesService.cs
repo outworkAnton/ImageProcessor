@@ -15,8 +15,8 @@ namespace BusinessLogic.Contract.Interfaces
         Task<string> CopyFile(string id);
         bool IsSourceDirectorySet();
         bool IsDestinationDirectorySet();
-        Task DeleteFile(string id);
+        void DeleteFile(string id);
         Task<ObservableCollection<ProductImage>> LoadFromDestinationDirectory();
-        Task SaveProcessedImagesList(ObservableCollection<ProductImage> processedImages);
+        void SaveProcessedImagesList(ObservableCollection<ProductImage> processedImages);
     }
 }

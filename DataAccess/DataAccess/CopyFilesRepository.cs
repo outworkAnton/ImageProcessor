@@ -240,13 +240,13 @@ namespace DataAccess
 
         public bool IsDestinationDirectorySet() => _destinationDirectory != null;
 
-        public async Task DeleteFile(string id)
+        public void DeleteFile(string id)
         {
             try
             {
                 var item = _filesFound.FirstOrDefault(f => f.Name == id + ".jpg");
                 var fileForDelete = Path.Combine(_destinationDirectory.FullName, Path.GetFileName(item.FullName));
-                await QuickIOFile.DeleteAsync(fileForDelete).ConfigureAwait(false);
+                File.Delete(fileForDelete);
             }
             catch (Exception ex)
             {
@@ -301,7 +301,7 @@ namespace DataAccess
             }
         }
 
-        public async Task SaveProcessedImagesList(string filesList)
+        public void SaveProcessedImagesList(string filesList)
         {
             try
             {
@@ -314,20 +314,27 @@ namespace DataAccess
                     }
                     catch
                     {
-                        var filePath = Path.Combine(_destinationDirectory.FullName, "Processed Images.json");
+                        var filePath = Path.Combine(_destinationDirectory.FullName, $"{_destinationDirectory.Name}.json");
                         QuickIOFile.Create(filePath);
-                        var newJsonFile = new QuickIOFileInfo(filePath);
-                        await newJsonFile.WriteAllTextAsync(filesList).ConfigureAwait(false);
+                        SaveContent(filePath, filesList);
                         return;
                     }
 
-                    File.WriteAllText(jsonFilePath, filesList);
+                    SaveContent(jsonFilePath, filesList);
                 }
             }
             catch (Exception ex)
             {
                 throw new IOException(ex.Message);
             }
+        }
+
+        private static void SaveContent(string jsonFilePath, string filesList)
+        {
+            var jsonFileInfo = new FileInfo(jsonFilePath);
+            jsonFileInfo.Attributes &= ~FileAttributes.Hidden;
+            File.WriteAllText(jsonFilePath, filesList);
+            jsonFileInfo.Attributes |= FileAttributes.Hidden;
         }
 
         public string GetDestinationDirectoryPath()

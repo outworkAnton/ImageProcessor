@@ -104,11 +104,11 @@ namespace BusinessLogic.Services
             return _copyFilesRepository.IsDestinationDirectorySet();
         }
 
-        public async Task DeleteFile(string id)
+        public void DeleteFile(string id)
         {
             try
             {
-                await _copyFilesRepository.DeleteFile(id).ConfigureAwait(false);
+                _copyFilesRepository.DeleteFile(id);
             }
             catch (IOException io)
             {
@@ -153,12 +153,12 @@ namespace BusinessLogic.Services
             }
         }
 
-        public async Task SaveProcessedImagesList(ObservableCollection<ProductImage> processedImages)
+        public void SaveProcessedImagesList(ObservableCollection<ProductImage> processedImages)
         {
             try
             {
                 var filesList = JsonConvert.SerializeObject(processedImages, Formatting.None);
-                await _copyFilesRepository.SaveProcessedImagesList(filesList).ConfigureAwait(false);
+                _copyFilesRepository.SaveProcessedImagesList(filesList);
             }
             catch (IOException io)
             {

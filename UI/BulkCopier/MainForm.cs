@@ -31,11 +31,11 @@ namespace BulkCopier
             InitializeComponent();
         }
 
-        private async void CopiedImages_Change(object sender, NotifyCollectionChangedEventArgs args)
+        private void CopiedImages_Change(object sender, NotifyCollectionChangedEventArgs args)
         {
             try
             {
-                await RecalculateCopiedImagesCollection();
+                RecalculateCopiedImagesCollection();
             }
             catch (Exception ex)
             {
@@ -43,7 +43,7 @@ namespace BulkCopier
             }
         }
 
-        private async Task RecalculateCopiedImagesCollection()
+        private void RecalculateCopiedImagesCollection()
         {
             try
             {
@@ -51,7 +51,7 @@ namespace BulkCopier
                 ProductCountLabel.Text = _copiedImages.Sum(x => x.Count).ToString();
                 if (_copiedImages.Any())
                 {
-                    await _copyFileService.SaveProcessedImagesList(_copiedImages);
+                    _copyFileService.SaveProcessedImagesList(_copiedImages);
                 }
             }
             catch (IOException io)
@@ -181,7 +181,7 @@ namespace BulkCopier
                     {
                         ProductImagesList.Items.AddRange(ConvertCopiedToList(_copiedImages));
                         FixProductListCount();
-                        await RecalculateCopiedImagesCollection();
+                        RecalculateCopiedImagesCollection();
                     }
                 }
             }
@@ -344,7 +344,7 @@ namespace BulkCopier
             }
         }
 
-        private async void ProductImagesList_KeyDown(object sender, KeyEventArgs e)
+        private void ProductImagesList_KeyDown(object sender, KeyEventArgs e)
         {
             try
             {
@@ -374,10 +374,10 @@ namespace BulkCopier
                             break;
 
                         case Keys.Delete:
-                            await _copyFileService.DeleteFile(selectedItemKey.Text);
+                            _copyFileService.DeleteFile(selectedItemKey.Text);
                             _copiedImages.Remove(_copiedImages.FirstOrDefault(img => img.Id == selectedItemKey.Text));
                             ProductImagesList.Items.Remove(ProductImagesList.Items[ProductImagesList.SelectedIndices[0]]);
-                            await RecalculateCopiedImagesCollection();
+                            RecalculateCopiedImagesCollection();
                             return;
 
                         default:
@@ -393,7 +393,7 @@ namespace BulkCopier
                     }
 
                     _copiedImages.First(img => img.Id == selectedItemKey.Text).Count = count;
-                    await RecalculateCopiedImagesCollection();
+                    RecalculateCopiedImagesCollection();
                 }
             }
             catch (IOException io)
@@ -406,7 +406,7 @@ namespace BulkCopier
             }
         }
 
-        private async void ProductImagesList_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+        private void ProductImagesList_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
             try
             {
@@ -436,7 +436,7 @@ namespace BulkCopier
                 PictureBox.ImageLocation = null;
                 _copiedImages.Remove(_copiedImages.FirstOrDefault(img => img.Id == e.Item.Text));
                 ProductImagesList.Items.Remove(ProductImagesList.Items[ProductImagesList.SelectedIndices[0]]);
-                await RecalculateCopiedImagesCollection();
+                RecalculateCopiedImagesCollection();
                 ProductImagesList.SelectedItems.Clear();
             }
         }
@@ -701,11 +701,11 @@ namespace BulkCopier
             e.HasMorePages = _printService.HasNextPage();
         }
 
-        private async void Print_ButtonClick(object sender, EventArgs e)
+        private void Print_ButtonClick(object sender, EventArgs e)
         {
             try
             {
-                await ProcessImages();
+                ProcessImages();
                 if (_copiedImages.Any())
                 {
                     printPreviewDialog1.Document = printDocument1;
@@ -723,7 +723,7 @@ namespace BulkCopier
             }
         }
 
-        private async Task ProcessImages()
+        private void ProcessImages()
         {
             try
             {
@@ -735,7 +735,7 @@ namespace BulkCopier
                     {
                         productImage.Processed = true;
                     }
-                    await RecalculateCopiedImagesCollection();
+                    RecalculateCopiedImagesCollection();
                 }
             }
             catch (Exception ex)
