@@ -696,9 +696,16 @@ namespace BulkCopier
 
         private void printDocument1_PrintPage(object sender, PrintPageEventArgs e)
         {
-            var page = _printService.GetPage();
-            e.Graphics.DrawImage(page, e.PageSettings.PrintableArea);
-            e.HasMorePages = _printService.HasNextPage();
+            try
+            {
+                var page = _printService.GetPage();
+                e.Graphics.DrawImage(page, e.PageSettings.PrintableArea);
+                e.HasMorePages = _printService.HasNextPage();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void Print_ButtonClick(object sender, EventArgs e)
@@ -751,7 +758,7 @@ namespace BulkCopier
             {
                 Color = true,
                 Landscape = false,
-                Margins = new Margins(1, 1, 1, 1)
+                Margins = new Margins(10, 10, 10, 10)
             };
             _printService.SetPrintSettings(printDocument1,
                 _copiedImages.ToArray(),
