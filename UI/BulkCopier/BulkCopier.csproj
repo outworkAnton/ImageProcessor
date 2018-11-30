@@ -117,6 +117,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="if_free-15_463002.ico" />
+    <None Include="Properties\Microsoft.WindowsAPICodePack.dll" />
+    <None Include="Properties\Microsoft.WindowsAPICodePack.Shell.dll" />
     <None Include="Properties\iconfinder_add_cross_new_plus_create_392530.png" />
     <None Include="Properties\iconfinder_Settings_gear_setting_tools_392496.png" />
     <None Include="Properties\iconfinder_Printer and Fax_51399.png" />
