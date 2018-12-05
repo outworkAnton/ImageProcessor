@@ -57,7 +57,7 @@
             this.ProductCountLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.ResetOrder = new System.Windows.Forms.ToolStripSplitButton();
             this.Print = new System.Windows.Forms.ToolStripSplitButton();
-            this.настройкаToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.SettingsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.NextPicBtn = new System.Windows.Forms.Button();
             this.PictureBox = new System.Windows.Forms.PictureBox();
             this.MainTable.SuspendLayout();
@@ -389,7 +389,7 @@
             // 
             this.Print.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.Print.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.настройкаToolStripMenuItem});
+            this.SettingsMenuItem});
             this.Print.Image = global::BulkCopier.Properties.Resources.Print;
             this.Print.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.Print.Name = "Print";
@@ -397,12 +397,13 @@
             this.Print.Text = "Печать";
             this.Print.ButtonClick += new System.EventHandler(this.Print_ButtonClick);
             // 
-            // настройкаToolStripMenuItem
+            // SettingsMenuItem
             // 
-            this.настройкаToolStripMenuItem.Image = global::BulkCopier.Properties.Resources.Settings;
-            this.настройкаToolStripMenuItem.Name = "настройкаToolStripMenuItem";
-            this.настройкаToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.настройкаToolStripMenuItem.Text = "Настройка";
+            this.SettingsMenuItem.Image = global::BulkCopier.Properties.Resources.Settings;
+            this.SettingsMenuItem.Name = "SettingsMenuItem";
+            this.SettingsMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.SettingsMenuItem.Text = "Настройка";
+            this.SettingsMenuItem.Click += new System.EventHandler(this.SettingsMenuItem_Click);
             // 
             // NextPicBtn
             // 
@@ -501,7 +502,7 @@
         private System.Windows.Forms.ToolStripStatusLabel ProductCountLabel;
         private System.Windows.Forms.ToolStripSplitButton ResetOrder;
         private System.Windows.Forms.ToolStripSplitButton Print;
-        private System.Windows.Forms.ToolStripMenuItem настройкаToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem SettingsMenuItem;
     }
 }
 

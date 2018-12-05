@@ -71,7 +71,7 @@ namespace BulkCopier
                 MessageBox.Show("Буфер обмена пуст. Скопируйте значение еще раз");
                 return;
             }
-            InputBarcodeBox.Text = Clipboard.GetText();
+            InputBarcodeBox.Text = Clipboard.GetText().Trim();
         }
 
         private async void InputBarcodeBox_TextChanged(object sender, EventArgs e)
@@ -769,6 +769,11 @@ namespace BulkCopier
         private void printDocument1_EndPrint(object sender, PrintEventArgs e)
         {
             _printService.ResetPrintSettings();
+        }
+
+        private void SettingsMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
