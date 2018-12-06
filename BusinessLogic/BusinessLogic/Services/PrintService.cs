@@ -16,6 +16,7 @@ namespace BusinessLogic.Services
         private List<ProductImage> _images = new List<ProductImage>();
         private int _columns;
         private int _rows;
+        private bool _drawGridLines;
         private string _orderId = string.Empty;
 
         private List<Image> _pages = new List<Image>();
@@ -71,7 +72,7 @@ namespace BusinessLogic.Services
                                 var rowFrame = new RectangleF(rowPoint, rowSize);
                                 var rowGrid = new Bitmap((int)Math.Floor(rowSize.Width), (int)Math.Floor(rowSize.Height));
                                 var rowCanvas = Graphics.FromImage(rowGrid);
-                                if (row > 0) pageCanvas.DrawLine(new Pen(Brushes.DarkGray), rowPoint, new PointF(_printableArea.Right - pageFields, rowPoint.Y));
+                                if (_drawGridLines && row > 0) pageCanvas.DrawLine(new Pen(Brushes.DarkGray), rowPoint, new PointF(_printableArea.Right - pageFields, rowPoint.Y));
                                 EnableHQMode(rowCanvas);
                                 rowPoint = new PointF(rowPoint.X, rowPoint.Y + cellPadding);
 
@@ -85,7 +86,7 @@ namespace BusinessLogic.Services
                                         var cellHeader = new RectangleF(new PointF(2.5F, 2.5F), cellHeaderSize);
                                         var cellGrid = new Bitmap((int)Math.Floor(cellSize.Width), (int)Math.Floor(cellSize.Height));
                                         var cellCanvas = Graphics.FromImage(cellGrid);
-                                        if (column > 0) pageCanvas.DrawLine(
+                                        if (_drawGridLines && column > 0) pageCanvas.DrawLine(
                                             new Pen(Brushes.DarkGray),
                                             new PointF((column * columnWidth) + pageFields, _printableArea.Top + pageHeaderHeight + pageFields),
                                             new PointF((column * columnWidth) + pageFields, _printableArea.Bottom - pageHeaderHeight - pageFields));
@@ -96,7 +97,8 @@ namespace BusinessLogic.Services
                                         DrawHeaderOrFooter(productImage.Id, cellHeaderFontSize, cellCanvas, cellHeader);
                                         var image = ScaleImage(Image.FromFile(productImage.Path), (int)Math.Floor(cellFrame.Width), (int)Math.Floor(cellFrame.Height - cellHeaderSize.Height));
                                         var centerCellWidthPoint = (cellFrame.Width - image.Width) / 2;
-                                        cellCanvas.DrawImage(image, new PointF(centerCellWidthPoint, cellHeaderHeight));
+                                        var centerCellHeightPoint = (cellFrame.Height + cellHeaderHeight - image.Height) / 2;
+                                        cellCanvas.DrawImage(image, new PointF(centerCellWidthPoint, centerCellHeightPoint));
                                         _images.RemoveAt(0);
                                         rowCanvas.DrawImage(cellGrid, cellFrame);
                                     }
@@ -194,12 +196,13 @@ namespace BusinessLogic.Services
             _orderId = string.Empty;
         }
 
-        public void SetPrintSettings(PrintDocument printDocument, IReadOnlyCollection<ProductImage> processedImages, int columnsCount, int rowsCount)
+        public void SetPrintSettings(PrintDocument printDocument, IReadOnlyCollection<ProductImage> processedImages, BulkCopierSettings settings)
         {
             _printableArea = printDocument.DefaultPageSettings.PrintableArea;
             _images = processedImages.ToList();
-            _columns = columnsCount;
-            _rows = rowsCount;
+            _columns = settings.PageColumns;
+            _rows = settings.PageRows;
+            _drawGridLines = settings.DrawGridLines;
             _orderId = printDocument.DocumentName;
         }
     }

@@ -11,8 +11,7 @@ namespace BusinessLogic.Contract.Interfaces
         bool HasNextPage();
         void SetPrintSettings(PrintDocument printDocument,
             IReadOnlyCollection<ProductImage> processedImages,
-            int columnsCount,
-            int rowsCount);
+            BulkCopierSettings settings);
         void ResetPrintSettings();
     }
 }

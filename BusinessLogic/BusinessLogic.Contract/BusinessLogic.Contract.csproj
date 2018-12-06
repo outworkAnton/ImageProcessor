@@ -46,6 +46,7 @@
     <Compile Include="Interfaces\ICopyFilesService.cs" />
     <Compile Include="Interfaces\IPrintService.cs" />
     <Compile Include="Interfaces\IProcessImagesService.cs" />
+    <Compile Include="Models\BulkCopierSettings.cs" />
     <Compile Include="Models\ProductImage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

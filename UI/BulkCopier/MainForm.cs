@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using BusinessLogic.Contract.Interfaces;
 using BusinessLogic.Contract.Models;
 using System.Drawing.Printing;
+using Newtonsoft.Json;
 
 namespace BulkCopier
 {
@@ -22,6 +23,7 @@ namespace BulkCopier
         private IEnumerator<ProductImage> _foundImagesEnumerator;
         private ObservableCollection<ProductImage> _copiedImages = new ObservableCollection<ProductImage>();
         private readonly IProcessImagesService _processImagesService;
+        private static BulkCopierSettings _settings = JsonConvert.DeserializeObject<BulkCopierSettings>(Properties.Settings.Default.BulkCopierSettings) ?? new BulkCopierSettings();
 
         public MainForm(ICopyFilesService copyFileService, IPrintService printService, IProcessImagesService processImagesService)
         {
@@ -41,6 +43,11 @@ namespace BulkCopier
             {
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        private void UpdateSettings()
+        {
+            _settings = JsonConvert.DeserializeObject<BulkCopierSettings>(Properties.Settings.Default.BulkCopierSettings) ?? new BulkCopierSettings();
         }
 
         private void RecalculateCopiedImagesCollection()
@@ -123,8 +130,8 @@ namespace BulkCopier
             catch (Exception ex)
             {
                 _copyFileService.SetSourceDirectory(null);
-                Properties.Settings.Default.SourcePath = string.Empty;
-                Properties.Settings.Default.Save();
+                _settings.SourcePath = string.Empty;
+                SaveSettings();
                 SourceBox.Clear();
                 SourceBox.BackColor = SystemColors.Control;
                 InputBarcodeBox.Clear();
@@ -135,16 +142,22 @@ namespace BulkCopier
             }
         }
 
+        private static void SaveSettings()
+        {
+            Properties.Settings.Default.BulkCopierSettings = JsonConvert.SerializeObject(_settings);
+            Properties.Settings.Default.Save();
+        }
+
         private async void MainForm_Load(object sender, EventArgs e)
         {
             try
             {
-                Height = Properties.Settings.Default.FormHeight;
-                Width = Properties.Settings.Default.FormWidth;
-                Location = new Point(Properties.Settings.Default.FormTopPos, Properties.Settings.Default.FormLeftPos);
+                Size = _settings.FormSize;
+                Location = _settings.FormLocation;
                 AdjustColumnWidths(ProductImagesList);
+                SetUpPrintDocument(_settings);
 
-                var sourcePath = Properties.Settings.Default.SourcePath;
+                var sourcePath = _settings.SourcePath;
                 if (!string.IsNullOrWhiteSpace(sourcePath) && Directory.Exists(sourcePath))
                 {
                     _copyFileService.SetSourceDirectory(sourcePath);
@@ -156,10 +169,18 @@ namespace BulkCopier
             catch (Exception ex)
             {
                 MessageBox.Show("Возникла ошибка при доступе к папке с исходными изображениями\n" + ex.Message + "После завершения работы запустите приложение заново");
-                Properties.Settings.Default.SourcePath = string.Empty;
-                Properties.Settings.Default.Save();
+                _settings.SourcePath = string.Empty;
+                SaveSettings();
                 Application.Exit();
             }
+        }
+
+        private void SetUpPrintDocument(BulkCopierSettings settings)
+        {
+            printDocument1.DefaultPageSettings.Margins = settings.PageMargins;
+            printDocument1.DefaultPageSettings.PaperSize = settings.PageSize;
+            printDocument1.PrinterSettings.PrinterName = settings.PrinterName;
+            printDocument1.DefaultPageSettings.Landscape = _settings.PageLandscape;
         }
 
         private async void DestinationBtn_Click(object sender, EventArgs e)
@@ -225,8 +246,8 @@ namespace BulkCopier
                     FoundFilesCount.Text = 0.ToString();
                     SourceBox.BackColor = SystemColors.Control;
                     var sourcePath = folderBrowserDialog1.SelectedPath;
-                    Properties.Settings.Default.SourcePath = sourcePath;
-                    Properties.Settings.Default.Save();
+                    _settings.SourcePath = sourcePath;
+                    SaveSettings();
                     SourceBox.Text = sourcePath;
                     _copyFileService.SetSourceDirectory(sourcePath);
                     FoundFilesCount.Text = (await _copyFileService.FindAllFiles()).ToString();
@@ -239,8 +260,8 @@ namespace BulkCopier
                 MessageBox.Show(ex.Message);
                 FoundFilesCount.Text = 0.ToString();
                 SourceBox.BackColor = SystemColors.Control;
-                Properties.Settings.Default.SourcePath = string.Empty;
-                Properties.Settings.Default.Save();
+                _settings.SourcePath = string.Empty;
+                SaveSettings();
             }
         }
 
@@ -672,9 +693,8 @@ namespace BulkCopier
 
         private void MainForm_ResizeEnd(object sender, EventArgs e)
         {
-            Properties.Settings.Default.FormWidth = Width;
-            Properties.Settings.Default.FormHeight = Height;
-            Properties.Settings.Default.Save();
+            _settings.FormSize = Size;
+            SaveSettings();
         }
 
         private void PictureBox_MouseEnter(object sender, EventArgs e)
@@ -684,9 +704,8 @@ namespace BulkCopier
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Properties.Settings.Default.FormTopPos = Location.X;
-            Properties.Settings.Default.FormLeftPos = Location.Y;
-            Properties.Settings.Default.Save();
+            _settings.FormLocation = Location;
+            SaveSettings();
         }
 
         private void ResetOrder_Click_1(object sender, EventArgs e)
@@ -754,16 +773,9 @@ namespace BulkCopier
         private void printDocument1_BeginPrint(object sender, PrintEventArgs e)
         {
             printDocument1.DocumentName = new DirectoryInfo(_copyFileService.GetDestinationDirectoryPath()).Name;
-            printDocument1.DefaultPageSettings = new PageSettings()
-            {
-                Color = true,
-                Landscape = false,
-                Margins = new Margins(10, 10, 10, 10)
-            };
             _printService.SetPrintSettings(printDocument1,
                 _copiedImages.ToArray(),
-                Properties.Settings.Default.PrintColumns,
-                Properties.Settings.Default.PrintRows);
+                _settings);
         }
 
         private void printDocument1_EndPrint(object sender, PrintEventArgs e)
@@ -773,7 +785,10 @@ namespace BulkCopier
 
         private void SettingsMenuItem_Click(object sender, EventArgs e)
         {
-
+            var settingsForm = new SettingsForm(printDocument1, _settings);
+            settingsForm.ShowDialog();
+            UpdateSettings();
+            SetUpPrintDocument(_settings);
         }
     }
 }
