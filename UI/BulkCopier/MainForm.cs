@@ -92,8 +92,7 @@ namespace BulkCopier
                     PictureBox.Image = null;
                     PictureBox.ImageLocation = null;
                 }
-                BarcodeLabel.Visible = false;
-                NextPicBtn.Visible = false;
+                NextBtnPanel.Visible = false;
                 return;
             }
             _foundImages.Clear();
@@ -110,17 +109,10 @@ namespace BulkCopier
                     _foundImagesEnumerator.MoveNext();
                     PictureBox.ImageLocation = _foundImagesEnumerator.Current.Path;
                     PictureBox.LoadAsync();
-                    BarcodeLabel.Visible = true;
+                    NextBtnPanel.Visible = true;
+                    ShopLabel.Text = _processImagesService.GetImageTag(_foundImagesEnumerator.Current.Path);
                     BarcodeLabel.Text = _foundImagesEnumerator.Current.Id;
-
-                    if (_foundImages.Count > 1)
-                    {
-                        NextPicBtn.Visible = true;
-                    }
-                    else
-                    {
-                        NextPicBtn.Visible = false;
-                    }
+                    NextPicBtn.Visible = _foundImages.Count > 1;
                 }
                 else
                 {
@@ -278,6 +270,7 @@ namespace BulkCopier
                 PictureBox.ImageLocation = _foundImagesEnumerator.Current.Path;
                 PictureBox.LoadAsync();
                 BarcodeLabel.Text = _foundImagesEnumerator.Current.Id;
+                ShopLabel.Text = _processImagesService.GetImageTag(_foundImagesEnumerator.Current.Path);
                 InputBarcodeBox.Focus();
             }
             catch
@@ -286,6 +279,7 @@ namespace BulkCopier
                 PictureBox.ImageLocation = _foundImagesEnumerator.Current.Path;
                 PictureBox.LoadAsync();
                 BarcodeLabel.Text = _foundImagesEnumerator.Current.Id;
+                ShopLabel.Text = _processImagesService.GetImageTag(_foundImagesEnumerator.Current.Path);
                 InputBarcodeBox.Focus();
             }
         }
@@ -326,7 +320,7 @@ namespace BulkCopier
             catch (FileNotFoundException fnf)
             {
                 _copiedImages.Remove(_copiedImages.FirstOrDefault(img => img.Id == _foundImagesEnumerator.Current.Id));
-                ProductImagesList.Items.Find(_foundImagesEnumerator.Current.Id, false).FirstOrDefault().Remove();
+                ProductImagesList.Items.Find(_foundImagesEnumerator.Current.Id, false).FirstOrDefault()?.Remove();
                 throw new FileNotFoundException("Не удалось скопировать файл в целевую папку\n" + fnf.Message);
             }
             catch (IOException io)
@@ -433,11 +427,16 @@ namespace BulkCopier
             {
                 if (e.IsSelected)
                 {
-                    var imagePath = _copiedImages.First(img => img.Id == e.Item.SubItems[0].Text).Path;
+                    var product = _copiedImages.First(img => img.Id == e.Item.SubItems[0].Text);
+                    var imagePath = product?.Path;
                     if (!File.Exists(imagePath))
                     {
                         throw new FileNotFoundException("Файл изображения не найден");
                     }
+                    NextBtnPanel.Visible = true;
+                    NextPicBtn.Visible = false;
+                    BarcodeLabel.Text = product.Id;
+                    ShopLabel.Text = _processImagesService.GetImageTag(imagePath);
                     PictureBox.ImageLocation = imagePath;
                     PictureBox.LoadAsync();
                 }
@@ -448,6 +447,8 @@ namespace BulkCopier
                         PictureBox.Image.Dispose();
                         PictureBox.Image = null;
                     }
+                    NextPicBtn.Visible = true;
+                    NextBtnPanel.Visible = false;
                 }
             }
             catch (Exception ex)
@@ -495,8 +496,7 @@ namespace BulkCopier
                     PictureBox.Image.Dispose();
                     PictureBox.Image = null;
                 }
-                BarcodeLabel.Visible = false;
-                NextPicBtn.Visible = false;
+                NextBtnPanel.Visible = false;
                 ProductImagesList.Items.Clear();
                 BarcodeCountLabel.Text = "0";
                 ProductCountLabel.Text = "0";
@@ -532,6 +532,8 @@ namespace BulkCopier
                     PictureBox.Image.Dispose();
                     PictureBox.Image = null;
                 }
+                NextPicBtn.Visible = true;
+                NextBtnPanel.Visible = false;
 
                 FixProductListCount();
             }
@@ -618,12 +620,13 @@ namespace BulkCopier
         {
             var filename = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "FileList.txt");
 
-            using (StreamWriter stream = new StreamWriter(filename))
+            using (var stream = new StreamWriter(filename))
             {
-                foreach (string file in Directory.GetFiles(path, "*.jpg"))
+                Directory.GetFiles(path, "*.jpg").Select(x =>
                 {
-                    stream.WriteLine(Path.GetFileNameWithoutExtension(file));
-                }
+                    stream.WriteLine(Path.GetFileNameWithoutExtension(x));
+                    return x;
+                });
             }
         }
 

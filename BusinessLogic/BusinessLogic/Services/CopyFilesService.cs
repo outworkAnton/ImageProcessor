@@ -15,10 +15,7 @@ namespace BusinessLogic.Services
     {
         private readonly IDataAccessRepository _copyFilesRepository;
 
-        public CopyFilesService(IDataAccessRepository copyFilesRepository)
-        {
-            _copyFilesRepository = copyFilesRepository ?? throw new ArgumentNullException(nameof(copyFilesRepository));
-        }
+        public CopyFilesService(IDataAccessRepository copyFilesRepository) => _copyFilesRepository = copyFilesRepository ?? throw new ArgumentNullException(nameof(copyFilesRepository));
 
         public int FindAllFiles()
         {

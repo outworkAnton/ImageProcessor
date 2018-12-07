@@ -16,6 +16,11 @@ namespace BusinessLogic.Services
 {
     public class ProcessImagesService : IProcessImagesService
     {
+        public string GetImageTag(string path)
+        {
+            return string.Join(",", ShellFile.FromFilePath(path).Properties.System.Keywords.Value);
+        }
+
         public void Process(IReadOnlyCollection<ProductImage> imagesForProcess)
         {
             try
