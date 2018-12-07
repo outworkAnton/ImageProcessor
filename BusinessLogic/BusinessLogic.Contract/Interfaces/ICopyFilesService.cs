@@ -7,12 +7,12 @@ namespace BusinessLogic.Contract.Interfaces
 {
     public interface ICopyFilesService
     {
-        Task<int> FindAllFiles();
+        int FindAllFiles();
         void SetSourceDirectory(string path);
         Task SetDestinationDirectory(string path);
         string GetDestinationDirectoryPath();
         Task<IReadOnlyCollection<ProductImage>> FindFiles(string filename);
-        Task<string> CopyFile(string id);
+        Task<string> CopyFile(string filename);
         bool IsSourceDirectorySet();
         bool IsDestinationDirectorySet();
         void DeleteFile(string id);

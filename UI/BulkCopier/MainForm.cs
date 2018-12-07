@@ -148,7 +148,7 @@ namespace BulkCopier
             Properties.Settings.Default.Save();
         }
 
-        private async void MainForm_Load(object sender, EventArgs e)
+        private void MainForm_Load(object sender, EventArgs e)
         {
             try
             {
@@ -162,7 +162,7 @@ namespace BulkCopier
                 {
                     _copyFileService.SetSourceDirectory(sourcePath);
                     SourceBox.Text = sourcePath;
-                    FoundFilesCount.Text = (await _copyFileService.FindAllFiles()).ToString();
+                    FoundFilesCount.Text = _copyFileService.FindAllFiles().ToString();
                     SourceBox.BackColor = Color.LimeGreen;
                 }
             }
@@ -236,7 +236,7 @@ namespace BulkCopier
             }
         }
 
-        private async void SourceBtn_Click(object sender, EventArgs e)
+        private void SourceBtn_Click(object sender, EventArgs e)
         {
             folderBrowserDialog1.RootFolder = Environment.SpecialFolder.MyComputer;
             try
@@ -250,7 +250,7 @@ namespace BulkCopier
                     SaveSettings();
                     SourceBox.Text = sourcePath;
                     _copyFileService.SetSourceDirectory(sourcePath);
-                    FoundFilesCount.Text = (await _copyFileService.FindAllFiles()).ToString();
+                    FoundFilesCount.Text = _copyFileService.FindAllFiles().ToString();
                     SourceBox.BackColor = Color.LimeGreen;
                     InputBarcodeBox.Visible = _copyFileService.IsDestinationDirectorySet();
                 }
@@ -315,7 +315,7 @@ namespace BulkCopier
                 {
                     return;
                 }
-                newFilePath = await _copyFileService.CopyFile(_foundImagesEnumerator.Current.Id);
+                newFilePath = await _copyFileService.CopyFile(_foundImagesEnumerator.Current.Path);
                 _copiedImages.Insert(0, new ProductImage(_foundImagesEnumerator.Current.Id, newFilePath));
                 ProductImagesList.Items.Insert(0, new ListViewItem(new[] { _foundImagesEnumerator.Current.Id, "" }));
             }

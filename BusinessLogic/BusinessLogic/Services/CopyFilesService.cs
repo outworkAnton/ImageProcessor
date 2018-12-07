@@ -20,11 +20,11 @@ namespace BusinessLogic.Services
             _copyFilesRepository = copyFilesRepository ?? throw new ArgumentNullException(nameof(copyFilesRepository));
         }
 
-        public async Task<int> FindAllFiles()
+        public int FindAllFiles()
         {
             try
             {
-                return await _copyFilesRepository.FindAllFiles().ConfigureAwait(false);
+                return _copyFilesRepository.FindAllFiles();
             }
             catch (Exception ex)
             {
@@ -70,11 +70,11 @@ namespace BusinessLogic.Services
             }
         }
 
-        public async Task<string> CopyFile(string id)
+        public async Task<string> CopyFile(string filename)
         {
             try
             {
-                return await _copyFilesRepository.CopyFile(id).ConfigureAwait(false);
+                return await _copyFilesRepository.CopyFile(filename).ConfigureAwait(false);
             }
             catch (FileNotFoundException fnf)
             {

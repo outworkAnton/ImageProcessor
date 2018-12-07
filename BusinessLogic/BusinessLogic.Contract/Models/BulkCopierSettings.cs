@@ -13,7 +13,7 @@ namespace BusinessLogic.Contract.Models
         public bool DrawGridLines { get; set; } = true;
         public Margins PageMargins { get; set; } = new Margins(100, 100, 100, 100);
         public bool PageLandscape { get; set; }
-        public PaperSize PageSize { get; set; } = new PaperSize() { RawKind = (int)PaperKind.A4 };
+        public PaperSize PageSize { get; set; } = new PaperSize() { RawKind = (int)PaperKind.A4, PaperName = "A4" };
         public string PrinterName { get; set; } = GetDefaultPrinterName();
 
         private static string GetDefaultPrinterName()

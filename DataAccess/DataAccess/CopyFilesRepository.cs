@@ -69,11 +69,11 @@ namespace DataAccess
                     throw new DirectoryNotFoundException("Целевая папка не доступна");
                 }
 
-                var item = _filesFound.Find(f => f.Name == filename + ".jpg");
-                var newFilePath = Path.Combine(_destinationDirectory.FullName, Path.GetFileName(item.FullName));
+                var item = _filesFound.Find(f => f.FullName == filename);
+                var newFilePath = Path.Combine(_destinationDirectory.FullName, Path.GetFileName(filename));
                 if (await QuickIOFile.ExistsAsync(newFilePath).ConfigureAwait(false))
                 {
-                    throw new ArgumentException($"Файл {filename} уже существует");
+                    throw new ArgumentException($"Файл {item.Name} уже существует");
                 }
 
                 await QuickIOFile.CopyToDirectoryAsync(item, _destinationDirectory).ConfigureAwait(false);
@@ -99,28 +99,18 @@ namespace DataAccess
             }
         }
 
-        public async Task<int> FindAllFiles()
+        public int FindAllFiles()
         {
             _filesFound.Clear();
             try
             {
-                _filesFound.AddRange((await _sourceDirectory
-                    .EnumerateFilesAsync("*.jpg", SearchOption.AllDirectories, QuickIOEnumerateOptions.SuppressAllExceptions)
-                    .ConfigureAwait(false)).ToArray());
-
+                var files = FindAccessableFiles(_sourceDirectory.FullName, "*.jpg", true)
+                        .Select(file => new QuickIOFileInfo(file)).ToList();
+                _filesFound.AddRange(files);
             }
             catch
             {
-                try
-                {
-                    var files = FindAccessableFiles(_sourceDirectory.FullName, "*.jpg", true)
-                        .Select(file => new QuickIOFileInfo(file)).ToList();
-                    _filesFound.AddRange(files);
-                }
-                catch
-                {
-                    throw new IOException("Возникла ошибка при попытке получить список файлов из исходной папки");
-                }
+                throw new IOException("Возникла ошибка при попытке получить список файлов из исходной папки");
             }
             return _filesFound.Count;
         }
@@ -222,7 +212,7 @@ namespace DataAccess
             {
                 if (_filesFound.Count == 0)
                 {
-                    await FindAllFiles().ConfigureAwait(false);
+                    FindAllFiles();
                 }
                 if (!await _sourceDirectory.SafeExistsAsync().ConfigureAwait(false))
                 {

@@ -10,7 +10,7 @@ namespace DataAccess.Contract.Interfaces
         Task SetDestinationDirectory(string path);
         string GetDestinationDirectoryPath();
         Task<string> CopyFile(string filename);
-        Task<int> FindAllFiles();
+        int FindAllFiles();
         Task<IReadOnlyCollection<QuickIOFileInfo>> FindFile(string filename);
         bool IsSourceDirectorySet();
         bool IsDestinationDirectorySet();

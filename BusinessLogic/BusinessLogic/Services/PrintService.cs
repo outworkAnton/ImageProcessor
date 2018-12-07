@@ -150,18 +150,12 @@ namespace BusinessLogic.Services
         {
             try
             {
-                double q;
-                if (source.Width > source.Height)
-                {
-                    q = (double)source.Width / width;
-                    height = (int)Math.Round(source.Height / q);
-                }
-                else
-                {
-                    q = (double)source.Height / height;
-                    width = (int)Math.Round(source.Width / q);
-                }
-                
+                var nPercentW = (width / (float)source.Width);
+                var nPercentH = (height / (float)source.Height);
+                var nPercent = nPercentH < nPercentW ? nPercentH : nPercentW;
+
+                width = (int)(source.Width * nPercent);
+                height = (int)(source.Height * nPercent);
 
                 var destRect = new Rectangle(0, 0, width, height);
                 var dest = new Bitmap(width, height);
