@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using BusinessLogic.Contract.Interfaces;
 using BusinessLogic.Contract.Models;
@@ -81,7 +80,7 @@ namespace BulkCopier
             InputBarcodeBox.Text = Clipboard.GetText().Trim();
         }
 
-        private async void InputBarcodeBox_TextChanged(object sender, EventArgs e)
+        private void InputBarcodeBox_TextChanged(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(InputBarcodeBox.Text))
             {
@@ -91,7 +90,7 @@ namespace BulkCopier
                 return;
             }
             StartsWithRadio.Checked = true;
-            await FindImages();
+            FindImages();
         }
 
         private void ResetSearchControls()
@@ -105,13 +104,13 @@ namespace BulkCopier
             NextBtnPanel.Visible = false;
         }
 
-        private async Task FindImages()
+        private void FindImages()
         {
             _foundImages.Clear();
             _foundImagesEnumerator = null;
             try
             {
-                _foundImages = (await _copyFileService.FindFiles(InputBarcodeBox.Text, StartsWithRadio.Checked))?.ToList()
+                _foundImages = _copyFileService.FindFiles(InputBarcodeBox.Text, StartsWithRadio.Checked)?.ToList()
                     ?? throw new IOException("Источник изображений не найден");
 
                 if (_foundImages.Count > 0)
@@ -188,7 +187,7 @@ namespace BulkCopier
             printDocument1.DefaultPageSettings.Landscape = _settings.PageLandscape;
         }
 
-        private async void DestinationBtn_Click(object sender, EventArgs e)
+        private void DestinationBtn_Click(object sender, EventArgs e)
         {
             folderBrowserDialog1.RootFolder = Environment.SpecialFolder.DesktopDirectory;
             try
@@ -196,12 +195,12 @@ namespace BulkCopier
                 if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
                 {
                     DestinationBox.Text = folderBrowserDialog1.SelectedPath;
-                    await _copyFileService.SetDestinationDirectory(DestinationBox.Text);
+                    _copyFileService.SetDestinationDirectory(DestinationBox.Text);
                     DestinationBox.BackColor = Color.LimeGreen;
                     InputBarcodeBox.Visible = _copyFileService.IsSourceDirectorySet();
                     DestinationBox.ReadOnly = true;
                     ProductImagesList.Items.Clear();
-                    _copiedImages = await _copyFileService.LoadFromDestinationDirectory();
+                    _copiedImages = _copyFileService.LoadFromDestinationDirectory();
                     _copiedImages.CollectionChanged += CopiedImages_Change;
                     if (_copiedImages.Any())
                     {
@@ -295,7 +294,7 @@ namespace BulkCopier
             }
         }
 
-        private async void InputBarcodeBox_Leave(object sender, EventArgs e)
+        private void InputBarcodeBox_Leave(object sender, EventArgs e)
         {
             try
             {
@@ -306,7 +305,7 @@ namespace BulkCopier
                 {
                     return;
                 }
-                await ProcessProductImage();
+                ProcessProductImage();
             }
             catch (Exception ex)
             {
@@ -314,7 +313,7 @@ namespace BulkCopier
             }
         }
 
-        private async Task ProcessProductImage()
+        private void ProcessProductImage()
         {
             var newFilePath = string.Empty;
             try
@@ -323,7 +322,7 @@ namespace BulkCopier
                 {
                     return;
                 }
-                newFilePath = await _copyFileService.CopyFile(_foundImagesEnumerator.Current.Path);
+                newFilePath = _copyFileService.CopyFile(_foundImagesEnumerator.Current.Path);
                 _copiedImages.Insert(0, new ProductImage(_foundImagesEnumerator.Current.Id, newFilePath));
                 ProductImagesList.Items.Insert(0, new ListViewItem(new[] { _foundImagesEnumerator.Current.Id, "" }));
             }
@@ -558,13 +557,13 @@ namespace BulkCopier
             }
         }
 
-        private async void MainForm_Deactivate(object sender, EventArgs e)
+        private void MainForm_Deactivate(object sender, EventArgs e)
         {
             try
             {
                 if (_foundImagesEnumerator != null)
                 {
-                    await ProcessProductImage();
+                    ProcessProductImage();
                 }
             }
             catch (Exception ex)
@@ -590,7 +589,7 @@ namespace BulkCopier
             }
         }
 
-        private async void PictureBox_Click(object sender, EventArgs e)
+        private void PictureBox_Click(object sender, EventArgs e)
         {
             try
             {
@@ -608,7 +607,7 @@ namespace BulkCopier
                 }
                 if (_foundImagesEnumerator != null)
                 {
-                    await ProcessProductImage();
+                    ProcessProductImage();
                     PictureBox.ImageLocation = _copiedImages.First(img => img.Id == _foundImagesEnumerator?.Current?.Id).Path;
                 }
                 var filePath = PictureBox.ImageLocation;
@@ -658,7 +657,7 @@ namespace BulkCopier
             }
         }
 
-        private async void DestinationBox_KeyDown(object sender, KeyEventArgs e)
+        private void DestinationBox_KeyDown(object sender, KeyEventArgs e)
         {
             try
             {
@@ -667,7 +666,7 @@ namespace BulkCopier
                     case Keys.Enter:
                         if (!string.IsNullOrWhiteSpace(DestinationBox.Text) && !DestinationBox.ReadOnly)
                         {
-                            await _copyFileService.SetDestinationDirectory(DestinationBox.Text);
+                            _copyFileService.SetDestinationDirectory(DestinationBox.Text);
                             DestinationBox.BackColor = Color.LimeGreen;
                             InputBarcodeBox.Visible = _copyFileService.IsSourceDirectorySet();
                             DestinationBox.ReadOnly = true;
@@ -809,17 +808,17 @@ namespace BulkCopier
             SetUpPrintDocument(_settings);
         }
 
-        private async void StartsWithRadio_CheckedChanged(object sender, EventArgs e)
+        private void StartsWithRadio_CheckedChanged(object sender, EventArgs e)
         {
             if (SearchModePanel.Visible)
             {
-                await FindImages();
+                FindImages();
             }
         }
 
-        private async void ContainsRadio_CheckedChanged(object sender, EventArgs e)
+        private void ContainsRadio_CheckedChanged(object sender, EventArgs e)
         {
-            await FindImages();
+            FindImages();
         }
     }
 }

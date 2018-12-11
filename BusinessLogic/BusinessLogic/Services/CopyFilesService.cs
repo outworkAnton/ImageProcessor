@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using BusinessLogic.Contract.Interfaces;
 using BusinessLogic.Contract.Models;
 using DataAccess.Contract.Interfaces;
@@ -15,7 +14,8 @@ namespace BusinessLogic.Services
     {
         private readonly IDataAccessRepository _copyFilesRepository;
 
-        public CopyFilesService(IDataAccessRepository copyFilesRepository) => _copyFilesRepository = copyFilesRepository ?? throw new ArgumentNullException(nameof(copyFilesRepository));
+        public CopyFilesService(IDataAccessRepository copyFilesRepository) => _copyFilesRepository = copyFilesRepository 
+            ?? throw new ArgumentNullException(nameof(copyFilesRepository));
 
         public int FindAllFiles()
         {
@@ -41,11 +41,11 @@ namespace BusinessLogic.Services
             }
         }
 
-        public async Task SetDestinationDirectory(string path)
+        public void SetDestinationDirectory(string path)
         {
             try
             {
-                await _copyFilesRepository.SetDestinationDirectory(path).ConfigureAwait(false);
+                _copyFilesRepository.SetDestinationDirectory(path);
             }
             catch (Exception ex)
             {
@@ -53,11 +53,12 @@ namespace BusinessLogic.Services
             }
         }
 
-        public async Task<IReadOnlyCollection<ProductImage>> FindFiles(string filename, bool startsWith)
+        public IReadOnlyCollection<ProductImage> FindFiles(string filename, bool startsWith)
         {
             try
             {
-                return (await _copyFilesRepository.FindFile(filename, startsWith).ConfigureAwait(false))?
+                return _copyFilesRepository
+                    .FindFile(filename, startsWith)?
                     .Select(FileToModelConverter.ConvertToModel)?
                     .ToArray();
             }
@@ -67,11 +68,11 @@ namespace BusinessLogic.Services
             }
         }
 
-        public async Task<string> CopyFile(string filename)
+        public string CopyFile(string filename)
         {
             try
             {
-                return await _copyFilesRepository.CopyFile(filename).ConfigureAwait(false);
+                return _copyFilesRepository.CopyFile(filename);
             }
             catch (FileNotFoundException fnf)
             {
@@ -113,14 +114,13 @@ namespace BusinessLogic.Services
             }
         }
 
-        public async Task<ObservableCollection<ProductImage>> LoadFromDestinationDirectory()
+        public ObservableCollection<ProductImage> LoadFromDestinationDirectory()
         {
             try
             {
                 var files = new ObservableCollection<ProductImage>();
-                var bclFile = await _copyFilesRepository
-                            .LoadFromDestinationDirectory()
-                            .ConfigureAwait(false);
+                var bclFile = _copyFilesRepository
+                            .LoadFromDestinationDirectory();
                 if (!string.IsNullOrWhiteSpace(bclFile))
                 {
                     files = JsonConvert
@@ -128,7 +128,7 @@ namespace BusinessLogic.Services
                 }
                 else
                 {
-                    var filesInDir = await _copyFilesRepository.EnumerateDestinationDirectoryFiles().ConfigureAwait(false);
+                    var filesInDir = _copyFilesRepository.EnumerateDestinationDirectoryFiles();
 
                     if (filesInDir != null)
                     {

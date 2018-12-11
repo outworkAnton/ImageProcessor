@@ -1,22 +1,21 @@
-﻿using SchwabenCode.QuickIO;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace DataAccess.Contract.Interfaces
 {
     public interface IDataAccessRepository
     {
         void SetSourceDirectory(string path);
-        Task SetDestinationDirectory(string path);
+        void SetDestinationDirectory(string path);
         string GetDestinationDirectoryPath();
-        Task<string> CopyFile(string filename);
+        string CopyFile(string filename);
         int FindAllFiles();
-        Task<IReadOnlyCollection<QuickIOFileInfo>> FindFile(string filename, bool startsWith);
+        IReadOnlyCollection<FileInfo> FindFile(string filename, bool startsWith);
         bool IsSourceDirectorySet();
         bool IsDestinationDirectorySet();
         void DeleteFile(string id);
-        Task<string> LoadFromDestinationDirectory();
-        Task<IReadOnlyCollection<QuickIOFileInfo>> EnumerateDestinationDirectoryFiles();
+        string LoadFromDestinationDirectory();
+        IReadOnlyCollection<FileInfo> EnumerateDestinationDirectoryFiles();
         void SaveProcessedImagesList(string filesList);
     }
 }

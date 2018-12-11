@@ -1,18 +1,16 @@
 ﻿using DataAccess.Contract.Interfaces;
-using SchwabenCode.QuickIO;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace DataAccess
 {
     public class CopyFilesRepository : IDataAccessRepository
     {
-        private List<QuickIOFileInfo> _filesFound = new List<QuickIOFileInfo>();
-        private QuickIODirectoryInfo _sourceDirectory;
-        private QuickIODirectoryInfo _destinationDirectory;
+        private List<FileInfo> _filesFound = new List<FileInfo>();
+        private DirectoryInfo _sourceDirectory;
+        private DirectoryInfo _destinationDirectory;
 
         public void SetSourceDirectory(string path)
         {
@@ -23,7 +21,7 @@ namespace DataAccess
                     _sourceDirectory = null;
                     return;
                 }
-                _sourceDirectory = new QuickIODirectoryInfo(path);
+                _sourceDirectory = new DirectoryInfo(path);
             }
             catch
             {
@@ -31,7 +29,7 @@ namespace DataAccess
             }
         }
 
-        public async Task SetDestinationDirectory(string path)
+        public void SetDestinationDirectory(string path)
         {
             try
             {
@@ -41,13 +39,13 @@ namespace DataAccess
                     return;
                 }
                 var destPath = path;
-                if (!await QuickIODirectory.ExistsAsync(destPath).ConfigureAwait(false))
+                if (!Directory.Exists(destPath))
                 {
                     var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                     destPath = Path.Combine(desktopPath, path);
-                    await QuickIODirectory.CreateAsync(destPath).ConfigureAwait(false);
+                    Directory.CreateDirectory(destPath);
                 }
-                _destinationDirectory = new QuickIODirectoryInfo(destPath);
+                _destinationDirectory = new DirectoryInfo(destPath);
             }
             catch
             {
@@ -55,30 +53,30 @@ namespace DataAccess
             }
         }
 
-        public async Task<string> CopyFile(string filename)
+        public string CopyFile(string filename)
         {
             try
             {
-                if (!await QuickIODirectory.ExistsAsync(_sourceDirectory).ConfigureAwait(false))
+                if (!Directory.Exists(_sourceDirectory.FullName))
                 {
                     throw new DirectoryNotFoundException("Папка с исходными изображениями не доступна");
                 }
 
-                if (!await QuickIODirectory.ExistsAsync(_destinationDirectory).ConfigureAwait(false))
+                if (!Directory.Exists(_destinationDirectory.FullName))
                 {
                     throw new DirectoryNotFoundException("Целевая папка не доступна");
                 }
 
                 var item = _filesFound.Find(f => f.FullName == filename);
                 var newFilePath = Path.Combine(_destinationDirectory.FullName, Path.GetFileName(filename));
-                if (await QuickIOFile.ExistsAsync(newFilePath).ConfigureAwait(false))
+                if (File.Exists(newFilePath))
                 {
                     throw new ArgumentException($"Файл {item.Name} уже существует");
                 }
 
-                await QuickIOFile.CopyToDirectoryAsync(item, _destinationDirectory).ConfigureAwait(false);
+                File.Copy(item.FullName, newFilePath);
 
-                if (await QuickIOFile.ExistsAsync(newFilePath).ConfigureAwait(false))
+                if (File.Exists(newFilePath))
                 {
                     return newFilePath;
                 }
@@ -105,7 +103,7 @@ namespace DataAccess
             try
             {
                 var files = FindAccessableFiles(_sourceDirectory.FullName, "*.jpg", true)
-                        .Select(file => new QuickIOFileInfo(file)).ToList();
+                        .Select(file => new FileInfo(file)).ToList();
                 _filesFound.AddRange(files);
             }
             catch
@@ -206,7 +204,7 @@ namespace DataAccess
             }
         }
 
-        public async Task<IReadOnlyCollection<QuickIOFileInfo>> FindFile(string filename, bool startsWith)
+        public IReadOnlyCollection<FileInfo> FindFile(string filename, bool startsWith)
         {
             try
             {
@@ -214,7 +212,7 @@ namespace DataAccess
                 {
                     FindAllFiles();
                 }
-                if (!await _sourceDirectory.SafeExistsAsync().ConfigureAwait(false))
+                if (!_sourceDirectory.Exists)
                 {
                     return null;
                 }
@@ -236,7 +234,7 @@ namespace DataAccess
         {
             try
             {
-                var item = _filesFound.FirstOrDefault(f => f.Name == id + ".jpg");
+                var item = _filesFound.Find(f => f.Name == id + ".jpg");
                 var fileForDelete = Path.Combine(_destinationDirectory.FullName, Path.GetFileName(item.FullName));
                 File.Delete(fileForDelete);
             }
@@ -246,29 +244,15 @@ namespace DataAccess
             }
         }
 
-        public async Task<string> LoadFromDestinationDirectory()
+        public string LoadFromDestinationDirectory()
         {
             try
             {
                 if (IsDestinationDirectorySet())
                 {
-                    IReadOnlyCollection<QuickIOFileInfo> jsonFiles = null;
-                    try
-                    {
-                        jsonFiles = (await _destinationDirectory
-                            .EnumerateFilesAsync("*.json", SearchOption.TopDirectoryOnly, QuickIOEnumerateOptions.SuppressAllExceptions)
-                            .ConfigureAwait(false))?
-                            .ToArray();
-                    }
-                    catch
-                    {
-                        return null;
-                    }
+                    var jsonFiles = _destinationDirectory.GetFiles("*.json", SearchOption.TopDirectoryOnly);
 
-                    return await jsonFiles
-                        .FirstOrDefault()
-                        .ReadAllTextAsync()
-                        .ConfigureAwait(false);
+                    return File.ReadAllText(jsonFiles.FirstOrDefault()?.FullName);
                 }
                 return null;
             }
@@ -278,14 +262,11 @@ namespace DataAccess
             }
         }
 
-        public async Task<IReadOnlyCollection<QuickIOFileInfo>> EnumerateDestinationDirectoryFiles()
+        public IReadOnlyCollection<FileInfo> EnumerateDestinationDirectoryFiles()
         {
             try
             {
-                return (await _destinationDirectory
-                    .EnumerateFilesAsync("*.jpg", SearchOption.TopDirectoryOnly, QuickIOEnumerateOptions.SuppressAllExceptions)
-                    .ConfigureAwait(false))?
-                        .ToArray();
+                return _destinationDirectory.GetFiles("*.jpg", SearchOption.TopDirectoryOnly);
             }
             catch (Exception ex)
             {
@@ -307,7 +288,7 @@ namespace DataAccess
                     catch
                     {
                         var filePath = Path.Combine(_destinationDirectory.FullName, $"{_destinationDirectory.Name}.json");
-                        QuickIOFile.Create(filePath);
+                        File.Create(filePath);
                         SaveContent(filePath, filesList);
                         return;
                     }
