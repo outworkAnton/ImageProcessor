@@ -11,7 +11,7 @@ namespace DataAccess.Contract.Interfaces
         string GetDestinationDirectoryPath();
         Task<string> CopyFile(string filename);
         int FindAllFiles();
-        Task<IReadOnlyCollection<QuickIOFileInfo>> FindFile(string filename);
+        Task<IReadOnlyCollection<QuickIOFileInfo>> FindFile(string filename, bool startsWith);
         bool IsSourceDirectorySet();
         bool IsDestinationDirectorySet();
         void DeleteFile(string id);

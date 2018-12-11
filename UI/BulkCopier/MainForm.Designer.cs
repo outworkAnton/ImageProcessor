@@ -45,6 +45,9 @@
             this.RightTable = new System.Windows.Forms.TableLayoutPanel();
             this.NextBtnPanel = new System.Windows.Forms.TableLayoutPanel();
             this.NextPicBtn = new System.Windows.Forms.Button();
+            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.BarcodeLabel = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
             this.PictureBox = new System.Windows.Forms.PictureBox();
             this.tableLayoutPanel6 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel7 = new System.Windows.Forms.TableLayoutPanel();
@@ -59,21 +62,20 @@
             this.ResetOrder = new System.Windows.Forms.ToolStripSplitButton();
             this.Print = new System.Windows.Forms.ToolStripSplitButton();
             this.SettingsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.BarcodeLabel = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.ShopLabel = new System.Windows.Forms.Label();
+            this.SearchModePanel = new System.Windows.Forms.TableLayoutPanel();
+            this.StartsWithRadio = new System.Windows.Forms.RadioButton();
+            this.ContainsRadio = new System.Windows.Forms.RadioButton();
             this.MainTable.SuspendLayout();
             this.LeftTable.SuspendLayout();
             this.RightTable.SuspendLayout();
             this.NextBtnPanel.SuspendLayout();
+            this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PictureBox)).BeginInit();
             this.tableLayoutPanel6.SuspendLayout();
             this.tableLayoutPanel7.SuspendLayout();
             this.tableLayoutPanel8.SuspendLayout();
             this.StatusBar.SuspendLayout();
-            this.tableLayoutPanel1.SuspendLayout();
+            this.SearchModePanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // InputBarcodeBox
@@ -83,7 +85,7 @@
             this.InputBarcodeBox.Location = new System.Drawing.Point(3, 3);
             this.InputBarcodeBox.MinimumSize = new System.Drawing.Size(25, 30);
             this.InputBarcodeBox.Name = "InputBarcodeBox";
-            this.InputBarcodeBox.Size = new System.Drawing.Size(331, 26);
+            this.InputBarcodeBox.Size = new System.Drawing.Size(331, 30);
             this.InputBarcodeBox.TabIndex = 0;
             this.InputBarcodeBox.Visible = false;
             this.InputBarcodeBox.WordWrap = false;
@@ -108,7 +110,7 @@
             this.ProductImagesList.Name = "ProductImagesList";
             this.ProductImagesList.ShowGroups = false;
             this.ProductImagesList.ShowItemToolTips = true;
-            this.ProductImagesList.Size = new System.Drawing.Size(229, 424);
+            this.ProductImagesList.Size = new System.Drawing.Size(229, 457);
             this.ProductImagesList.TabIndex = 3;
             this.ProductImagesList.UseCompatibleStateImageBehavior = false;
             this.ProductImagesList.View = System.Windows.Forms.View.Details;
@@ -202,7 +204,7 @@
             this.MainTable.Name = "MainTable";
             this.MainTable.RowCount = 1;
             this.MainTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.MainTable.Size = new System.Drawing.Size(584, 436);
+            this.MainTable.Size = new System.Drawing.Size(584, 469);
             this.MainTable.TabIndex = 11;
             // 
             // LeftTable
@@ -218,30 +220,32 @@
             this.LeftTable.RowCount = 1;
             this.LeftTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.LeftTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 430F));
-            this.LeftTable.Size = new System.Drawing.Size(235, 430);
+            this.LeftTable.Size = new System.Drawing.Size(235, 463);
             this.LeftTable.TabIndex = 0;
             // 
             // RightTable
             // 
             this.RightTable.ColumnCount = 1;
             this.RightTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.RightTable.Controls.Add(this.SearchModePanel, 0, 1);
             this.RightTable.Controls.Add(this.InputBarcodeBox, 0, 0);
-            this.RightTable.Controls.Add(this.NextBtnPanel, 0, 1);
-            this.RightTable.Controls.Add(this.PictureBox, 0, 2);
-            this.RightTable.Controls.Add(this.tableLayoutPanel6, 0, 3);
-            this.RightTable.Controls.Add(this.tableLayoutPanel7, 0, 4);
-            this.RightTable.Controls.Add(this.tableLayoutPanel8, 0, 5);
+            this.RightTable.Controls.Add(this.NextBtnPanel, 0, 2);
+            this.RightTable.Controls.Add(this.PictureBox, 0, 3);
+            this.RightTable.Controls.Add(this.tableLayoutPanel6, 0, 4);
+            this.RightTable.Controls.Add(this.tableLayoutPanel7, 0, 5);
+            this.RightTable.Controls.Add(this.tableLayoutPanel8, 0, 6);
             this.RightTable.Dock = System.Windows.Forms.DockStyle.Fill;
             this.RightTable.Location = new System.Drawing.Point(244, 3);
             this.RightTable.Name = "RightTable";
-            this.RightTable.RowCount = 6;
+            this.RightTable.RowCount = 7;
             this.RightTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
+            this.RightTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.RightTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 68F));
             this.RightTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.RightTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.RightTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 33F));
             this.RightTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 33F));
-            this.RightTable.Size = new System.Drawing.Size(337, 430);
+            this.RightTable.Size = new System.Drawing.Size(337, 463);
             this.RightTable.TabIndex = 1;
             // 
             // NextBtnPanel
@@ -253,7 +257,7 @@
             this.NextBtnPanel.Controls.Add(this.NextPicBtn, 1, 0);
             this.NextBtnPanel.Controls.Add(this.tableLayoutPanel1, 0, 0);
             this.NextBtnPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.NextBtnPanel.Location = new System.Drawing.Point(3, 38);
+            this.NextBtnPanel.Location = new System.Drawing.Point(3, 68);
             this.NextBtnPanel.MinimumSize = new System.Drawing.Size(0, 55);
             this.NextBtnPanel.Name = "NextBtnPanel";
             this.NextBtnPanel.RowCount = 1;
@@ -280,13 +284,53 @@
             this.NextPicBtn.UseVisualStyleBackColor = false;
             this.NextPicBtn.Click += new System.EventHandler(this.NextPicBtn_Click);
             // 
+            // tableLayoutPanel1
+            // 
+            this.tableLayoutPanel1.AutoSize = true;
+            this.tableLayoutPanel1.ColumnCount = 2;
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 62F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel1.Controls.Add(this.BarcodeLabel, 1, 0);
+            this.tableLayoutPanel1.Controls.Add(this.label1, 0, 0);
+            this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 3);
+            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+            this.tableLayoutPanel1.RowCount = 1;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(190, 55);
+            this.tableLayoutPanel1.TabIndex = 3;
+            // 
+            // BarcodeLabel
+            // 
+            this.BarcodeLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.BarcodeLabel.AutoSize = true;
+            this.BarcodeLabel.Font = new System.Drawing.Font("Calibri", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.BarcodeLabel.Location = new System.Drawing.Point(65, 18);
+            this.BarcodeLabel.Name = "BarcodeLabel";
+            this.BarcodeLabel.Size = new System.Drawing.Size(60, 18);
+            this.BarcodeLabel.TabIndex = 8;
+            this.BarcodeLabel.Text = "Артикул";
+            this.BarcodeLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label1
+            // 
+            this.label1.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label1.Location = new System.Drawing.Point(5, 20);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(52, 14);
+            this.label1.TabIndex = 8;
+            this.label1.Text = "Артикул:";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // PictureBox
             // 
             this.PictureBox.Cursor = System.Windows.Forms.Cursors.Default;
             this.PictureBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.PictureBox.Location = new System.Drawing.Point(3, 106);
+            this.PictureBox.Location = new System.Drawing.Point(3, 136);
             this.PictureBox.Name = "PictureBox";
-            this.PictureBox.Size = new System.Drawing.Size(331, 235);
+            this.PictureBox.Size = new System.Drawing.Size(331, 238);
             this.PictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.PictureBox.TabIndex = 1;
             this.PictureBox.TabStop = false;
@@ -302,7 +346,7 @@
             this.tableLayoutPanel6.Controls.Add(this.label2, 0, 0);
             this.tableLayoutPanel6.Controls.Add(this.FoundFilesCount, 1, 0);
             this.tableLayoutPanel6.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.tableLayoutPanel6.Location = new System.Drawing.Point(3, 348);
+            this.tableLayoutPanel6.Location = new System.Drawing.Point(3, 381);
             this.tableLayoutPanel6.Name = "tableLayoutPanel6";
             this.tableLayoutPanel6.RowCount = 1;
             this.tableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -318,7 +362,7 @@
             this.tableLayoutPanel7.Controls.Add(this.SourceBtn, 0, 0);
             this.tableLayoutPanel7.Controls.Add(this.SourceBox, 1, 0);
             this.tableLayoutPanel7.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.tableLayoutPanel7.Location = new System.Drawing.Point(3, 367);
+            this.tableLayoutPanel7.Location = new System.Drawing.Point(3, 400);
             this.tableLayoutPanel7.Name = "tableLayoutPanel7";
             this.tableLayoutPanel7.RowCount = 1;
             this.tableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -335,7 +379,7 @@
             this.tableLayoutPanel8.Controls.Add(this.DestinationBtn, 0, 0);
             this.tableLayoutPanel8.Controls.Add(this.DestinationBox, 1, 0);
             this.tableLayoutPanel8.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.tableLayoutPanel8.Location = new System.Drawing.Point(3, 400);
+            this.tableLayoutPanel8.Location = new System.Drawing.Point(3, 433);
             this.tableLayoutPanel8.Name = "tableLayoutPanel8";
             this.tableLayoutPanel8.RowCount = 1;
             this.tableLayoutPanel8.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -368,7 +412,7 @@
             this.ResetOrder,
             this.Print});
             this.StatusBar.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
-            this.StatusBar.Location = new System.Drawing.Point(0, 439);
+            this.StatusBar.Location = new System.Drawing.Point(0, 472);
             this.StatusBar.Name = "StatusBar";
             this.StatusBar.Size = new System.Drawing.Size(590, 22);
             this.StatusBar.TabIndex = 12;
@@ -428,78 +472,51 @@
             this.SettingsMenuItem.Text = "Настройка";
             this.SettingsMenuItem.Click += new System.EventHandler(this.SettingsMenuItem_Click);
             // 
-            // tableLayoutPanel1
+            // SearchModePanel
             // 
-            this.tableLayoutPanel1.AutoSize = true;
-            this.tableLayoutPanel1.ColumnCount = 2;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 62F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Controls.Add(this.BarcodeLabel, 1, 0);
-            this.tableLayoutPanel1.Controls.Add(this.label1, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.label3, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.ShopLabel, 1, 1);
-            this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 3);
-            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 2;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(190, 55);
-            this.tableLayoutPanel1.TabIndex = 3;
+            this.SearchModePanel.ColumnCount = 2;
+            this.SearchModePanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.SearchModePanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.SearchModePanel.Controls.Add(this.StartsWithRadio, 0, 0);
+            this.SearchModePanel.Controls.Add(this.ContainsRadio, 1, 0);
+            this.SearchModePanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.SearchModePanel.Location = new System.Drawing.Point(3, 38);
+            this.SearchModePanel.Name = "SearchModePanel";
+            this.SearchModePanel.RowCount = 1;
+            this.SearchModePanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.SearchModePanel.Size = new System.Drawing.Size(331, 24);
+            this.SearchModePanel.TabIndex = 6;
+            this.SearchModePanel.Visible = false;
             // 
-            // BarcodeLabel
+            // StartsWithRadio
             // 
-            this.BarcodeLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.BarcodeLabel.AutoSize = true;
-            this.BarcodeLabel.Font = new System.Drawing.Font("Calibri", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.BarcodeLabel.Location = new System.Drawing.Point(65, 4);
-            this.BarcodeLabel.Name = "BarcodeLabel";
-            this.BarcodeLabel.Size = new System.Drawing.Size(60, 18);
-            this.BarcodeLabel.TabIndex = 8;
-            this.BarcodeLabel.Text = "Артикул";
-            this.BarcodeLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.StartsWithRadio.AutoSize = true;
+            this.StartsWithRadio.Checked = true;
+            this.StartsWithRadio.Location = new System.Drawing.Point(3, 3);
+            this.StartsWithRadio.Name = "StartsWithRadio";
+            this.StartsWithRadio.Size = new System.Drawing.Size(103, 17);
+            this.StartsWithRadio.TabIndex = 0;
+            this.StartsWithRadio.TabStop = true;
+            this.StartsWithRadio.Text = "Начинается с...";
+            this.StartsWithRadio.UseVisualStyleBackColor = true;
+            this.StartsWithRadio.CheckedChanged += new System.EventHandler(this.StartsWithRadio_CheckedChanged);
             // 
-            // label1
+            // ContainsRadio
             // 
-            this.label1.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label1.Location = new System.Drawing.Point(5, 6);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(52, 14);
-            this.label1.TabIndex = 8;
-            this.label1.Text = "Артикул:";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label3
-            // 
-            this.label3.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label3.Location = new System.Drawing.Point(3, 34);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(55, 14);
-            this.label3.TabIndex = 8;
-            this.label3.Text = "Магазин:";
-            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // ShopLabel
-            // 
-            this.ShopLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.ShopLabel.AutoSize = true;
-            this.ShopLabel.Font = new System.Drawing.Font("Calibri", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.ShopLabel.Location = new System.Drawing.Point(65, 32);
-            this.ShopLabel.Name = "ShopLabel";
-            this.ShopLabel.Size = new System.Drawing.Size(62, 18);
-            this.ShopLabel.TabIndex = 8;
-            this.ShopLabel.Text = "Магазин";
-            this.ShopLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.ContainsRadio.AutoSize = true;
+            this.ContainsRadio.Location = new System.Drawing.Point(168, 3);
+            this.ContainsRadio.Name = "ContainsRadio";
+            this.ContainsRadio.Size = new System.Drawing.Size(84, 17);
+            this.ContainsRadio.TabIndex = 1;
+            this.ContainsRadio.Text = "Содержит...";
+            this.ContainsRadio.UseVisualStyleBackColor = true;
+            this.ContainsRadio.CheckedChanged += new System.EventHandler(this.ContainsRadio_CheckedChanged);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(590, 461);
+            this.ClientSize = new System.Drawing.Size(590, 494);
             this.Controls.Add(this.StatusBar);
             this.Controls.Add(this.MainTable);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -520,6 +537,8 @@
             this.RightTable.PerformLayout();
             this.NextBtnPanel.ResumeLayout(false);
             this.NextBtnPanel.PerformLayout();
+            this.tableLayoutPanel1.ResumeLayout(false);
+            this.tableLayoutPanel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PictureBox)).EndInit();
             this.tableLayoutPanel6.ResumeLayout(false);
             this.tableLayoutPanel6.PerformLayout();
@@ -529,8 +548,8 @@
             this.tableLayoutPanel8.PerformLayout();
             this.StatusBar.ResumeLayout(false);
             this.StatusBar.PerformLayout();
-            this.tableLayoutPanel1.ResumeLayout(false);
-            this.tableLayoutPanel1.PerformLayout();
+            this.SearchModePanel.ResumeLayout(false);
+            this.SearchModePanel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -570,8 +589,9 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.Label BarcodeLabel;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label ShopLabel;
+        private System.Windows.Forms.TableLayoutPanel SearchModePanel;
+        private System.Windows.Forms.RadioButton StartsWithRadio;
+        private System.Windows.Forms.RadioButton ContainsRadio;
     }
 }
 

@@ -1,26 +1,16 @@
 ﻿using BusinessLogic.Contract.Interfaces;
 using BusinessLogic.Contract.Models;
 using Microsoft.WindowsAPICodePack.Shell;
-using Microsoft.WindowsAPICodePack.Shell.PropertySystem;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BusinessLogic.Services
 {
     public class ProcessImagesService : IProcessImagesService
     {
-        public string GetImageTag(string path)
-        {
-            return string.Join(",", ShellFile.FromFilePath(path).Properties.System.Keywords.Value);
-        }
-
         public void Process(IReadOnlyCollection<ProductImage> imagesForProcess)
         {
             try

@@ -53,11 +53,11 @@ namespace BusinessLogic.Services
             }
         }
 
-        public async Task<IReadOnlyCollection<ProductImage>> FindFiles(string filename)
+        public async Task<IReadOnlyCollection<ProductImage>> FindFiles(string filename, bool startsWith)
         {
             try
             {
-                return (await _copyFilesRepository.FindFile(filename).ConfigureAwait(false))?
+                return (await _copyFilesRepository.FindFile(filename, startsWith).ConfigureAwait(false))?
                     .Select(FileToModelConverter.ConvertToModel)?
                     .ToArray();
             }

@@ -206,7 +206,7 @@ namespace DataAccess
             }
         }
 
-        public async Task<IReadOnlyCollection<QuickIOFileInfo>> FindFile(string filename)
+        public async Task<IReadOnlyCollection<QuickIOFileInfo>> FindFile(string filename, bool startsWith)
         {
             try
             {
@@ -218,7 +218,9 @@ namespace DataAccess
                 {
                     return null;
                 }
-                return _filesFound.Where(f => f.Name.StartsWith(filename, StringComparison.OrdinalIgnoreCase)).ToArray();
+                return startsWith
+                    ? _filesFound.Where(f => f.Name.StartsWith(filename, StringComparison.OrdinalIgnoreCase)).ToArray()
+                    : _filesFound.Where(f => f.Name.IndexOf(filename, StringComparison.OrdinalIgnoreCase) >= 0).ToArray();
             }
             catch
             {

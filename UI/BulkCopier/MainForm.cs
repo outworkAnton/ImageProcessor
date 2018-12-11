@@ -86,37 +86,50 @@ namespace BulkCopier
             if (string.IsNullOrWhiteSpace(InputBarcodeBox.Text))
             {
                 InputBarcodeBox.BackColor = SystemColors.Control;
-                if (PictureBox.Image != null)
-                {
-                    PictureBox.Image.Dispose();
-                    PictureBox.Image = null;
-                    PictureBox.ImageLocation = null;
-                }
-                NextBtnPanel.Visible = false;
+                ResetSearchControls();
+                SearchModePanel.Visible = false;
                 return;
             }
+            StartsWithRadio.Checked = true;
+            await FindImages();
+        }
+
+        private void ResetSearchControls()
+        {
+            if (PictureBox.Image != null)
+            {
+                PictureBox.Image.Dispose();
+                PictureBox.Image = null;
+                PictureBox.ImageLocation = null;
+            }
+            NextBtnPanel.Visible = false;
+        }
+
+        private async Task FindImages()
+        {
             _foundImages.Clear();
             _foundImagesEnumerator = null;
             try
             {
-                _foundImages = (await _copyFileService.FindFiles(InputBarcodeBox.Text))?.ToList()
+                _foundImages = (await _copyFileService.FindFiles(InputBarcodeBox.Text, StartsWithRadio.Checked))?.ToList()
                     ?? throw new IOException("Источник изображений не найден");
 
-                if (_foundImages.Any())
+                if (_foundImages.Count > 0)
                 {
                     InputBarcodeBox.BackColor = Color.LimeGreen;
                     _foundImagesEnumerator = _foundImages.GetEnumerator();
                     _foundImagesEnumerator.MoveNext();
-                    PictureBox.ImageLocation = _foundImagesEnumerator.Current.Path;
+                    PictureBox.ImageLocation = _foundImagesEnumerator?.Current?.Path;
                     PictureBox.LoadAsync();
                     NextBtnPanel.Visible = true;
-                    ShopLabel.Text = _processImagesService.GetImageTag(_foundImagesEnumerator.Current.Path);
-                    BarcodeLabel.Text = _foundImagesEnumerator.Current.Id;
+                    SearchModePanel.Visible = true;
+                    BarcodeLabel.Text = _foundImagesEnumerator?.Current?.Id;
                     NextPicBtn.Visible = _foundImages.Count > 1;
                 }
                 else
                 {
                     InputBarcodeBox.BackColor = Color.Red;
+                    ResetSearchControls();
                 }
             }
             catch (Exception ex)
@@ -270,7 +283,6 @@ namespace BulkCopier
                 PictureBox.ImageLocation = _foundImagesEnumerator.Current.Path;
                 PictureBox.LoadAsync();
                 BarcodeLabel.Text = _foundImagesEnumerator.Current.Id;
-                ShopLabel.Text = _processImagesService.GetImageTag(_foundImagesEnumerator.Current.Path);
                 InputBarcodeBox.Focus();
             }
             catch
@@ -279,7 +291,6 @@ namespace BulkCopier
                 PictureBox.ImageLocation = _foundImagesEnumerator.Current.Path;
                 PictureBox.LoadAsync();
                 BarcodeLabel.Text = _foundImagesEnumerator.Current.Id;
-                ShopLabel.Text = _processImagesService.GetImageTag(_foundImagesEnumerator.Current.Path);
                 InputBarcodeBox.Focus();
             }
         }
@@ -288,7 +299,10 @@ namespace BulkCopier
         {
             try
             {
-                if (NextPicBtn.Focused || string.IsNullOrWhiteSpace(InputBarcodeBox.Text))
+                if (NextPicBtn.Focused 
+                    || StartsWithRadio.Focused
+                    || ContainsRadio.Focused
+                    || string.IsNullOrWhiteSpace(InputBarcodeBox.Text))
                 {
                     return;
                 }
@@ -436,7 +450,6 @@ namespace BulkCopier
                     NextBtnPanel.Visible = true;
                     NextPicBtn.Visible = false;
                     BarcodeLabel.Text = product.Id;
-                    ShopLabel.Text = _processImagesService.GetImageTag(imagePath);
                     PictureBox.ImageLocation = imagePath;
                     PictureBox.LoadAsync();
                 }
@@ -497,6 +510,7 @@ namespace BulkCopier
                     PictureBox.Image = null;
                 }
                 NextBtnPanel.Visible = false;
+                SearchModePanel.Visible = false;
                 ProductImagesList.Items.Clear();
                 BarcodeCountLabel.Text = "0";
                 ProductCountLabel.Text = "0";
@@ -534,6 +548,7 @@ namespace BulkCopier
                 }
                 NextPicBtn.Visible = true;
                 NextBtnPanel.Visible = false;
+                SearchModePanel.Visible = false;
 
                 FixProductListCount();
             }
@@ -792,6 +807,19 @@ namespace BulkCopier
             settingsForm.ShowDialog();
             UpdateSettings();
             SetUpPrintDocument(_settings);
+        }
+
+        private async void StartsWithRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            if (SearchModePanel.Visible)
+            {
+                await FindImages();
+            }
+        }
+
+        private async void ContainsRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            await FindImages();
         }
     }
 }
