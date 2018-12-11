@@ -181,10 +181,10 @@ namespace BulkCopier
 
         private void SetUpPrintDocument(BulkCopierSettings settings)
         {
-            printDocument1.DefaultPageSettings.Margins = settings.PageMargins;
-            printDocument1.DefaultPageSettings.PaperSize = settings.PageSize;
-            printDocument1.PrinterSettings.PrinterName = settings.PrinterName;
-            printDocument1.DefaultPageSettings.Landscape = _settings.PageLandscape;
+            printDocument.DefaultPageSettings.Margins = settings.PageMargins;
+            printDocument.DefaultPageSettings.PaperSize = settings.PageSize;
+            printDocument.PrinterSettings.PrinterName = settings.PrinterName;
+            printDocument.DefaultPageSettings.Landscape = _settings.PageLandscape;
         }
 
         private void DestinationBtn_Click(object sender, EventArgs e)
@@ -610,14 +610,12 @@ namespace BulkCopier
                     ProcessProductImage();
                     PictureBox.ImageLocation = _copiedImages.First(img => img.Id == _foundImagesEnumerator?.Current?.Id).Path;
                 }
-                var filePath = PictureBox.ImageLocation;
-                ProcessStartInfo Info = new ProcessStartInfo()
+                Process.Start(new ProcessStartInfo
                 {
                     FileName = "mspaint.exe",
                     WindowStyle = ProcessWindowStyle.Maximized,
-                    Arguments = filePath
-                };
-                Process.Start(Info);
+                    Arguments = PictureBox.ImageLocation
+                });
             }
             catch (Exception ex)
             {
@@ -751,7 +749,7 @@ namespace BulkCopier
                 ProcessImages();
                 if (_copiedImages.Any())
                 {
-                    printPreviewDialog1.Document = printDocument1;
+                    printPreviewDialog1.Document = printDocument;
                     ((Form)printPreviewDialog1).WindowState = FormWindowState.Maximized;
                     printPreviewDialog1.ShowDialog();
                 }
@@ -789,8 +787,8 @@ namespace BulkCopier
 
         private void printDocument1_BeginPrint(object sender, PrintEventArgs e)
         {
-            printDocument1.DocumentName = new DirectoryInfo(_copyFileService.GetDestinationDirectoryPath()).Name;
-            _printService.SetPrintSettings(printDocument1,
+            printDocument.DocumentName = new DirectoryInfo(_copyFileService.GetDestinationDirectoryPath()).Name;
+            _printService.SetPrintSettings(printDocument,
                 _copiedImages.ToArray(),
                 _settings);
         }
@@ -802,7 +800,7 @@ namespace BulkCopier
 
         private void SettingsMenuItem_Click(object sender, EventArgs e)
         {
-            var settingsForm = new SettingsForm(printDocument1, _settings);
+            var settingsForm = new SettingsForm(printDocument, _settings);
             settingsForm.ShowDialog();
             UpdateSettings();
             SetUpPrintDocument(_settings);
