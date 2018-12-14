@@ -251,8 +251,10 @@ namespace DataAccess
                 if (IsDestinationDirectorySet())
                 {
                     var jsonFiles = _destinationDirectory.GetFiles("*.json", SearchOption.TopDirectoryOnly);
-
-                    return File.ReadAllText(jsonFiles.FirstOrDefault()?.FullName);
+                    if (jsonFiles.Length > 0)
+                    {
+                        return File.ReadAllText(jsonFiles.FirstOrDefault()?.FullName);
+                    }
                 }
                 return null;
             }
@@ -287,10 +289,7 @@ namespace DataAccess
                     }
                     catch
                     {
-                        var filePath = Path.Combine(_destinationDirectory.FullName, $"{_destinationDirectory.Name}.json");
-                        File.Create(filePath);
-                        SaveContent(filePath, filesList);
-                        return;
+                        jsonFilePath = Path.Combine(_destinationDirectory.FullName, $"{_destinationDirectory.Name}.json");
                     }
 
                     SaveContent(jsonFilePath, filesList);
@@ -304,10 +303,12 @@ namespace DataAccess
 
         private static void SaveContent(string jsonFilePath, string filesList)
         {
-            var jsonFileInfo = new FileInfo(jsonFilePath);
-            jsonFileInfo.Attributes &= ~FileAttributes.Hidden;
+            if (File.Exists(jsonFilePath))
+            {
+                File.SetAttributes(jsonFilePath, FileAttributes.Normal);
+            }
             File.WriteAllText(jsonFilePath, filesList);
-            jsonFileInfo.Attributes |= FileAttributes.Hidden;
+            File.SetAttributes(jsonFilePath, FileAttributes.Hidden);
         }
 
         public string GetDestinationDirectoryPath()

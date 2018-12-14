@@ -450,7 +450,7 @@
             this.ResetOrder.Size = new System.Drawing.Size(108, 20);
             this.ResetOrder.Text = "Новый заказ";
             this.ResetOrder.ToolTipText = "Начать формировать новый заказ";
-            this.ResetOrder.Click += new System.EventHandler(this.ResetOrder_Click_1);
+            this.ResetOrder.Click += new System.EventHandler(this.ResetOrder_Click);
             // 
             // Print
             // 

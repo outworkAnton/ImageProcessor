@@ -11,6 +11,7 @@ using BusinessLogic.Contract.Interfaces;
 using BusinessLogic.Contract.Models;
 using System.Drawing.Printing;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
 
 namespace BulkCopier
 {
@@ -32,6 +33,8 @@ namespace BulkCopier
             InitializeComponent();
         }
 
+        #region Event Handlers
+
         private void CopiedImages_Change(object sender, NotifyCollectionChangedEventArgs args)
         {
             try
@@ -41,32 +44,6 @@ namespace BulkCopier
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-            }
-        }
-
-        private void UpdateSettings()
-        {
-            _settings = JsonConvert.DeserializeObject<BulkCopierSettings>(Properties.Settings.Default.BulkCopierSettings) ?? new BulkCopierSettings();
-        }
-
-        private void RecalculateCopiedImagesCollection()
-        {
-            try
-            {
-                BarcodeCountLabel.Text = _copiedImages.Count.ToString();
-                ProductCountLabel.Text = _copiedImages.Sum(x => x.Count).ToString();
-                if (_copiedImages.Any())
-                {
-                    _copyFileService.SaveProcessedImagesList(_copiedImages);
-                }
-            }
-            catch (IOException io)
-            {
-                throw new IOException("Не удалось сохранить список файлов\n" + io.Message);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Временный список файлов в памяти приложения поврежден\n" + ex.Message);
             }
         }
 
@@ -80,7 +57,7 @@ namespace BulkCopier
             InputBarcodeBox.Text = Clipboard.GetText().Trim();
         }
 
-        private void InputBarcodeBox_TextChanged(object sender, EventArgs e)
+        private async void InputBarcodeBox_TextChanged(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(InputBarcodeBox.Text))
             {
@@ -90,69 +67,44 @@ namespace BulkCopier
                 return;
             }
             StartsWithRadio.Checked = true;
-            FindImages();
+            await FindImages();
         }
 
-        private void ResetSearchControls()
+        private async void printDocument1_BeginPrint(object sender, PrintEventArgs e)
         {
-            if (PictureBox.Image != null)
-            {
-                PictureBox.Image.Dispose();
-                PictureBox.Image = null;
-                PictureBox.ImageLocation = null;
-            }
-            NextBtnPanel.Visible = false;
+            printDocument.DocumentName = new DirectoryInfo(_copyFileService.GetDestinationDirectoryPath()).Name;
+            await new TaskFactory().StartNew(() => _printService.SetPrintSettings(printDocument,
+                _copiedImages.ToArray(),
+                _settings));
         }
 
-        private void FindImages()
+        private async void printDocument1_EndPrint(object sender, PrintEventArgs e)
         {
-            _foundImages.Clear();
-            _foundImagesEnumerator = null;
-            try
-            {
-                _foundImages = _copyFileService.FindFiles(InputBarcodeBox.Text, StartsWithRadio.Checked)?.ToList()
-                    ?? throw new IOException("Источник изображений не найден");
+            await new TaskFactory().StartNew(_printService.ResetPrintSettings);
+        }
 
-                if (_foundImages.Count > 0)
-                {
-                    InputBarcodeBox.BackColor = Color.LimeGreen;
-                    _foundImagesEnumerator = _foundImages.GetEnumerator();
-                    _foundImagesEnumerator.MoveNext();
-                    PictureBox.ImageLocation = _foundImagesEnumerator?.Current?.Path;
-                    PictureBox.LoadAsync();
-                    NextBtnPanel.Visible = true;
-                    SearchModePanel.Visible = true;
-                    BarcodeLabel.Text = _foundImagesEnumerator?.Current?.Id;
-                    NextPicBtn.Visible = _foundImages.Count > 1;
-                }
-                else
-                {
-                    InputBarcodeBox.BackColor = Color.Red;
-                    ResetSearchControls();
-                }
-            }
-            catch (Exception ex)
+        private void SettingsMenuItem_Click(object sender, EventArgs e)
+        {
+            var settingsForm = new SettingsForm(printDocument, _settings);
+            settingsForm.ShowDialog();
+            UpdateSettings();
+            SetUpPrintDocument(_settings);
+        }
+
+        private async void StartsWithRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            if (SearchModePanel.Visible)
             {
-                _copyFileService.SetSourceDirectory(null);
-                _settings.SourcePath = string.Empty;
-                SaveSettings();
-                SourceBox.Clear();
-                SourceBox.BackColor = SystemColors.Control;
-                InputBarcodeBox.Clear();
-                if (MessageBox.Show(ex.Message + "\nВыбрать заново где находятся файлы?", "Ошибка при поиске файлов изображений", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                {
-                    SourceBtn.PerformClick();
-                }
+                await FindImages();
             }
         }
 
-        private static void SaveSettings()
+        private async void ContainsRadio_CheckedChanged(object sender, EventArgs e)
         {
-            Properties.Settings.Default.BulkCopierSettings = JsonConvert.SerializeObject(_settings);
-            Properties.Settings.Default.Save();
+            await FindImages();
         }
 
-        private void MainForm_Load(object sender, EventArgs e)
+        private async void MainForm_Load(object sender, EventArgs e)
         {
             try
             {
@@ -164,9 +116,9 @@ namespace BulkCopier
                 var sourcePath = _settings.SourcePath;
                 if (!string.IsNullOrWhiteSpace(sourcePath) && Directory.Exists(sourcePath))
                 {
-                    _copyFileService.SetSourceDirectory(sourcePath);
+                    await new TaskFactory().StartNew(() => _copyFileService.SetSourceDirectory(sourcePath));
                     SourceBox.Text = sourcePath;
-                    FoundFilesCount.Text = _copyFileService.FindAllFiles().ToString();
+                    FoundFilesCount.Text = await new TaskFactory().StartNew(() => _copyFileService.FindAllFiles().ToString());
                     SourceBox.BackColor = Color.LimeGreen;
                 }
             }
@@ -179,15 +131,7 @@ namespace BulkCopier
             }
         }
 
-        private void SetUpPrintDocument(BulkCopierSettings settings)
-        {
-            printDocument.DefaultPageSettings.Margins = settings.PageMargins;
-            printDocument.DefaultPageSettings.PaperSize = settings.PageSize;
-            printDocument.PrinterSettings.PrinterName = settings.PrinterName;
-            printDocument.DefaultPageSettings.Landscape = _settings.PageLandscape;
-        }
-
-        private void DestinationBtn_Click(object sender, EventArgs e)
+        private async void DestinationBtn_Click(object sender, EventArgs e)
         {
             folderBrowserDialog1.RootFolder = Environment.SpecialFolder.DesktopDirectory;
             try
@@ -195,12 +139,12 @@ namespace BulkCopier
                 if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
                 {
                     DestinationBox.Text = folderBrowserDialog1.SelectedPath;
-                    _copyFileService.SetDestinationDirectory(DestinationBox.Text);
+                    await new TaskFactory().StartNew(() => _copyFileService.SetDestinationDirectory(DestinationBox.Text));
                     DestinationBox.BackColor = Color.LimeGreen;
                     InputBarcodeBox.Visible = _copyFileService.IsSourceDirectorySet();
                     DestinationBox.ReadOnly = true;
                     ProductImagesList.Items.Clear();
-                    _copiedImages = _copyFileService.LoadFromDestinationDirectory();
+                    _copiedImages = await new TaskFactory().StartNew(() => _copyFileService.LoadFromDestinationDirectory());
                     _copiedImages.CollectionChanged += CopiedImages_Change;
                     if (_copiedImages.Any())
                     {
@@ -223,24 +167,7 @@ namespace BulkCopier
             }
         }
 
-        private ListViewItem[] ConvertCopiedToList(ObservableCollection<ProductImage> processedImages)
-        {
-            try
-            {
-                var list = new List<ListViewItem>();
-                foreach (var item in processedImages)
-                {
-                    list.Add(new ListViewItem(new[] { item.Id, item.Count.ToString() }));
-                }
-                return list.ToArray();
-            }
-            catch (Exception ex)
-            {
-                throw new FileLoadException(ex.Message);
-            }
-        }
-
-        private void SourceBtn_Click(object sender, EventArgs e)
+        private async void SourceBtn_Click(object sender, EventArgs e)
         {
             folderBrowserDialog1.RootFolder = Environment.SpecialFolder.MyComputer;
             try
@@ -253,8 +180,8 @@ namespace BulkCopier
                     _settings.SourcePath = sourcePath;
                     SaveSettings();
                     SourceBox.Text = sourcePath;
-                    _copyFileService.SetSourceDirectory(sourcePath);
-                    FoundFilesCount.Text = _copyFileService.FindAllFiles().ToString();
+                    await new TaskFactory().StartNew(() => _copyFileService.SetSourceDirectory(sourcePath));
+                    FoundFilesCount.Text = await new TaskFactory().StartNew(() => _copyFileService.FindAllFiles().ToString());
                     SourceBox.BackColor = Color.LimeGreen;
                     InputBarcodeBox.Visible = _copyFileService.IsDestinationDirectorySet();
                 }
@@ -294,81 +221,22 @@ namespace BulkCopier
             }
         }
 
-        private void InputBarcodeBox_Leave(object sender, EventArgs e)
+        private async void InputBarcodeBox_Leave(object sender, EventArgs e)
         {
             try
             {
-                if (NextPicBtn.Focused 
+                if (NextPicBtn.Focused
                     || StartsWithRadio.Focused
                     || ContainsRadio.Focused
                     || string.IsNullOrWhiteSpace(InputBarcodeBox.Text))
                 {
                     return;
                 }
-                ProcessProductImage();
+                await ProcessProductImage();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-            }
-        }
-
-        private void ProcessProductImage()
-        {
-            var newFilePath = string.Empty;
-            try
-            {
-                if (_foundImagesEnumerator == null || string.IsNullOrWhiteSpace(InputBarcodeBox.Text))
-                {
-                    return;
-                }
-                newFilePath = _copyFileService.CopyFile(_foundImagesEnumerator.Current.Path);
-                _copiedImages.Insert(0, new ProductImage(_foundImagesEnumerator.Current.Id, newFilePath));
-                ProductImagesList.Items.Insert(0, new ListViewItem(new[] { _foundImagesEnumerator.Current.Id, "" }));
-            }
-            catch (ArgumentException a)
-            {
-                throw new ArgumentException(a.Message);
-            }
-            catch (FileNotFoundException fnf)
-            {
-                _copiedImages.Remove(_copiedImages.FirstOrDefault(img => img.Id == _foundImagesEnumerator.Current.Id));
-                ProductImagesList.Items.Find(_foundImagesEnumerator.Current.Id, false).FirstOrDefault()?.Remove();
-                throw new FileNotFoundException("Не удалось скопировать файл в целевую папку\n" + fnf.Message);
-            }
-            catch (IOException io)
-            {
-                throw new IOException("Ошибка при обработке файла изображения\n" + io.Message);
-            }
-            catch (Exception ex)
-            {
-                try
-                {
-                    if (!string.IsNullOrWhiteSpace(_foundImagesEnumerator.Current.Id))
-                    {
-                        if (!_copiedImages.Any(img => img.Id == _foundImagesEnumerator.Current.Id) && !string.IsNullOrWhiteSpace(newFilePath))
-                        {
-                            _copiedImages.Insert(0, new ProductImage(_foundImagesEnumerator.Current.Id, newFilePath));
-                        }
-                        if (!ProductImagesList.Items.Find(_foundImagesEnumerator.Current.Id, false).Any())
-                        {
-                            ProductImagesList.Items.Insert(0, new ListViewItem(new[] { _foundImagesEnumerator.Current.Id, "" }));
-                        }
-                    }
-                    else
-                    {
-                        throw new ApplicationException();
-                    }
-                }
-                catch
-                {
-                    throw new Exception("Неизвестная ошибка в работе приложения\n" + ex.Message);
-                }
-
-            }
-            finally
-            {
-                InputBarcodeBox.Clear();
             }
         }
 
@@ -475,6 +343,397 @@ namespace BulkCopier
             }
         }
 
+        private void MainForm_Activated(object sender, EventArgs e)
+        {
+            if (InputBarcodeBox.Visible)
+            {
+                InputBarcodeBox.Focus();
+            }
+        }
+
+        private void ProductImagesList_Leave(object sender, EventArgs e)
+        {
+            try
+            {
+                if (PictureBox.Focused)
+                {
+                    return;
+                }
+
+                ProductImagesList.SelectedItems.Clear();
+                if (PictureBox.Image != null)
+                {
+                    PictureBox.Image.Dispose();
+                    PictureBox.Image = null;
+                }
+                NextPicBtn.Visible = true;
+                NextBtnPanel.Visible = false;
+                SearchModePanel.Visible = false;
+
+                FixProductListCount();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private async void MainForm_Deactivate(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_foundImagesEnumerator != null)
+                {
+                    await ProcessProductImage();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void ProductImagesList_Enter(object sender, EventArgs e)
+        {
+            try
+            {
+                if (ProductImagesList.SelectedIndices.Count > 0)
+                {
+                    var selectedItemKey = ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[0];
+                    var imagePath = _copiedImages.First(img => img.Id == selectedItemKey.Text).Path;
+                    PictureBox.LoadAsync(imagePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private async void PictureBox_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (PictureBox.Image == null)
+                {
+                    return;
+                }
+                if (ProductImagesList.SelectedIndices.Count > 0)
+                {
+                    var selectedItemValue = ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[1];
+                    if (!string.IsNullOrWhiteSpace(selectedItemValue.Text))
+                    {
+                        Clipboard.SetText(selectedItemValue.Text);
+                    }
+                }
+                if (_foundImagesEnumerator != null)
+                {
+                    await ProcessProductImage();
+                    PictureBox.ImageLocation = _copiedImages.First(img => img.Id == _foundImagesEnumerator?.Current?.Id).Path;
+                }
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "mspaint.exe",
+                    WindowStyle = ProcessWindowStyle.Maximized,
+                    Arguments = PictureBox.ImageLocation
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                PictureBox.ImageLocation = null;
+                PictureBox.Image = null;
+            }
+        }
+
+        private void MainForm_ResizeEnd(object sender, EventArgs e)
+        {
+            _settings.FormSize = Size;
+            SaveSettings();
+        }
+
+        private void PictureBox_MouseEnter(object sender, EventArgs e)
+        {
+            PictureBox.Cursor = PictureBox.Image != null ? Cursors.Hand : DefaultCursor;
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            _settings.FormLocation = Location;
+            SaveSettings();
+        }
+
+        private void ResetOrder_Click(object sender, EventArgs e)
+        {
+            ResetToNewOrder();
+        }
+
+        private void printDocument1_PrintPage(object sender, PrintPageEventArgs e)
+        {
+            try
+            {
+                var page = _printService.GetPage();
+                e.Graphics.DrawImage(page, e.PageSettings.PrintableArea);
+                e.HasMorePages = _printService.HasNextPage();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private async void Print_ButtonClick(object sender, EventArgs e)
+        {
+            try
+            {
+                await ProcessImages();
+                if (_copiedImages.Any())
+                {
+                    printPreviewDialog1.Document = printDocument;
+                    ((Form)printPreviewDialog1).WindowState = FormWindowState.Maximized;
+                    printPreviewDialog1.ShowDialog();
+                }
+            }
+            catch (InvalidOperationException io)
+            {
+                MessageBox.Show("Обработка изображения завершилась с ошибкой:\n" + io.Message);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("При печати изображений возникла ошибка:\n" + ex.Message);
+            }
+        }
+
+        private void MainForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.F2 when folderBrowserDialog1.ShowDialog() == DialogResult.OK:
+                    GetFileNamesForTest(folderBrowserDialog1.SelectedPath);
+                    break;
+                case Keys.F1:
+                    MessageBox.Show(Application.ProductVersion, "Версия приложения");
+                    break;
+            }
+        }
+
+        private async void DestinationBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            try
+            {
+                switch (e.KeyCode)
+                {
+                    case Keys.Enter:
+                        if (!string.IsNullOrWhiteSpace(DestinationBox.Text) && !DestinationBox.ReadOnly)
+                        {
+                            await new TaskFactory().StartNew(() => _copyFileService.SetDestinationDirectory(DestinationBox.Text));
+                            DestinationBox.BackColor = Color.LimeGreen;
+                            InputBarcodeBox.Visible = _copyFileService.IsSourceDirectorySet();
+                            DestinationBox.ReadOnly = true;
+                            ProductImagesList.Items.Clear();
+                            _copiedImages = await new TaskFactory().StartNew(() => _copyFileService.LoadFromDestinationDirectory());
+                            _copiedImages.CollectionChanged += CopiedImages_Change;
+                            if (_copiedImages.Any())
+                            {
+                                ProductImagesList.Items.AddRange(ConvertCopiedToList(_copiedImages));
+                                FixProductListCount();
+                                RecalculateCopiedImagesCollection();
+                            }
+                        }
+                        break;
+
+                    case Keys.Delete:
+                        DestinationBox.Clear();
+                        DestinationBox.ReadOnly = false;
+                        DestinationBox.BackColor = SystemColors.Control;
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void ProductImagesList_Resize(object sender, EventArgs e)
+        {
+            AdjustColumnWidths(ProductImagesList);
+        }
+
+        #endregion
+
+        private void UpdateSettings()
+        {
+            _settings = JsonConvert.DeserializeObject<BulkCopierSettings>(Properties.Settings.Default.BulkCopierSettings) ?? new BulkCopierSettings();
+        }
+
+        private void RecalculateCopiedImagesCollection()
+        {
+            try
+            {
+                BarcodeCountLabel.Text = _copiedImages.Count.ToString();
+                ProductCountLabel.Text = _copiedImages.Sum(x => x.Count).ToString();
+                if (_copiedImages.Any())
+                {
+                    _copyFileService.SaveProcessedImagesList(_copiedImages);
+                }
+            }
+            catch (IOException io)
+            {
+                throw new IOException("Не удалось сохранить список файлов\n" + io.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Временный список файлов в памяти приложения поврежден\n" + ex.Message);
+            }
+        }
+
+        private void ResetSearchControls()
+        {
+            if (PictureBox.Image != null)
+            {
+                PictureBox.Image.Dispose();
+                PictureBox.Image = null;
+                PictureBox.ImageLocation = null;
+            }
+            NextBtnPanel.Visible = false;
+        }
+
+        private async Task FindImages()
+        {
+            _foundImages.Clear();
+            _foundImagesEnumerator = null;
+            try
+            {
+                _foundImages = await new TaskFactory().StartNew(() => _copyFileService.FindFiles(InputBarcodeBox.Text, StartsWithRadio.Checked)?.ToList())
+                    ?? throw new IOException("Источник изображений не найден");
+
+                if (_foundImages?.Count > 0)
+                {
+                    InputBarcodeBox.BackColor = Color.LimeGreen;
+                    _foundImagesEnumerator = _foundImages?.GetEnumerator();
+                    _foundImagesEnumerator?.MoveNext();
+                    PictureBox.ImageLocation = _foundImagesEnumerator?.Current?.Path;
+                    if (!string.IsNullOrWhiteSpace(PictureBox.ImageLocation)) PictureBox.LoadAsync();
+                    NextBtnPanel.Visible = true;
+                    SearchModePanel.Visible = true;
+                    BarcodeLabel.Text = _foundImagesEnumerator?.Current?.Id;
+                    NextPicBtn.Visible = _foundImages?.Count > 1;
+                }
+                else
+                {
+                    InputBarcodeBox.BackColor = Color.Red;
+                    ResetSearchControls();
+                }
+            }
+            catch (Exception ex)
+            {
+                _copyFileService.SetSourceDirectory(null);
+                _settings.SourcePath = string.Empty;
+                SaveSettings();
+                SourceBox.Clear();
+                SourceBox.BackColor = SystemColors.Control;
+                InputBarcodeBox.Clear();
+                if (MessageBox.Show(ex.Message + "\nВыбрать заново где находятся файлы?", "Ошибка при поиске файлов изображений", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                {
+                    SourceBtn.PerformClick();
+                }
+            }
+        }
+
+        private static void SaveSettings()
+        {
+            Properties.Settings.Default.BulkCopierSettings = JsonConvert.SerializeObject(_settings);
+            Properties.Settings.Default.Save();
+        }
+
+        private void SetUpPrintDocument(BulkCopierSettings settings)
+        {
+            printDocument.DefaultPageSettings.Margins = settings.PageMargins;
+            printDocument.DefaultPageSettings.PaperSize = settings.PageSize;
+            printDocument.PrinterSettings.PrinterName = settings.PrinterName;
+            printDocument.DefaultPageSettings.Landscape = _settings.PageLandscape;
+        }
+
+        private ListViewItem[] ConvertCopiedToList(ObservableCollection<ProductImage> processedImages)
+        {
+            try
+            {
+                var list = new List<ListViewItem>();
+                foreach (var item in processedImages)
+                {
+                    list.Add(new ListViewItem(new[] { item.Id, item.Count.ToString() }));
+                }
+                return list.ToArray();
+            }
+            catch (Exception ex)
+            {
+                throw new FileLoadException(ex.Message);
+            }
+        }
+
+        private async Task ProcessProductImage()
+        {
+            var newFilePath = string.Empty;
+            try
+            {
+                if (_foundImagesEnumerator == null || string.IsNullOrWhiteSpace(InputBarcodeBox.Text))
+                {
+                    return;
+                }
+                newFilePath = await new TaskFactory().StartNew(() => _copyFileService.CopyFile(_foundImagesEnumerator.Current.Path));
+                _copiedImages.Insert(0, new ProductImage(_foundImagesEnumerator.Current.Id, newFilePath));
+                ProductImagesList.Items.Insert(0, new ListViewItem(new[] { _foundImagesEnumerator.Current.Id, "" }));
+            }
+            catch (ArgumentException a)
+            {
+                throw new ArgumentException(a.Message);
+            }
+            catch (FileNotFoundException fnf)
+            {
+                _copiedImages.Remove(_copiedImages.FirstOrDefault(img => img.Id == _foundImagesEnumerator.Current.Id));
+                ProductImagesList.Items.Find(_foundImagesEnumerator.Current.Id, false).FirstOrDefault()?.Remove();
+                throw new FileNotFoundException("Не удалось скопировать файл в целевую папку\n" + fnf.Message);
+            }
+            catch (IOException io)
+            {
+                throw new IOException("Ошибка при обработке файла изображения\n" + io.Message);
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(_foundImagesEnumerator.Current.Id))
+                    {
+                        if (!_copiedImages.Any(img => img.Id == _foundImagesEnumerator.Current.Id) && !string.IsNullOrWhiteSpace(newFilePath))
+                        {
+                            _copiedImages.Insert(0, new ProductImage(_foundImagesEnumerator.Current.Id, newFilePath));
+                        }
+                        if (!ProductImagesList.Items.Find(_foundImagesEnumerator.Current.Id, false).Any())
+                        {
+                            ProductImagesList.Items.Insert(0, new ListViewItem(new[] { _foundImagesEnumerator.Current.Id, "" }));
+                        }
+                    }
+                    else
+                    {
+                        throw new ApplicationException();
+                    }
+                }
+                catch
+                {
+                    throw new Exception("Неизвестная ошибка в работе приложения\n" + ex.Message);
+                }
+
+            }
+            finally
+            {
+                InputBarcodeBox.Clear();
+            }
+        }
+
         private void FixProductListCount()
         {
             try
@@ -522,112 +781,6 @@ namespace BulkCopier
             }
         }
 
-        private void MainForm_Activated(object sender, EventArgs e)
-        {
-            if (InputBarcodeBox.Visible)
-            {
-                InputBarcodeBox.Focus();
-            }
-        }
-
-        private void ProductImagesList_Leave(object sender, EventArgs e)
-        {
-            try
-            {
-                if (PictureBox.Focused)
-                {
-                    return;
-                }
-
-                ProductImagesList.SelectedItems.Clear();
-                if (PictureBox.Image != null)
-                {
-                    PictureBox.Image.Dispose();
-                    PictureBox.Image = null;
-                }
-                NextPicBtn.Visible = true;
-                NextBtnPanel.Visible = false;
-                SearchModePanel.Visible = false;
-
-                FixProductListCount();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        private void MainForm_Deactivate(object sender, EventArgs e)
-        {
-            try
-            {
-                if (_foundImagesEnumerator != null)
-                {
-                    ProcessProductImage();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        private void ProductImagesList_Enter(object sender, EventArgs e)
-        {
-            try
-            {
-                if (ProductImagesList.SelectedIndices.Count > 0)
-                {
-                    var selectedItemKey = ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[0];
-                    var imagePath = _copiedImages.First(img => img.Id == selectedItemKey.Text).Path;
-                    PictureBox.LoadAsync(imagePath);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        private void PictureBox_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (PictureBox.Image == null)
-                {
-                    return;
-                }
-                if (ProductImagesList.SelectedIndices.Count > 0)
-                {
-                    var selectedItemValue = ProductImagesList.Items[ProductImagesList.SelectedIndices[0]].SubItems[1];
-                    if (!string.IsNullOrWhiteSpace(selectedItemValue.Text))
-                    {
-                        Clipboard.SetText(selectedItemValue.Text);
-                    }
-                }
-                if (_foundImagesEnumerator != null)
-                {
-                    ProcessProductImage();
-                    PictureBox.ImageLocation = _copiedImages.First(img => img.Id == _foundImagesEnumerator?.Current?.Id).Path;
-                }
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "mspaint.exe",
-                    WindowStyle = ProcessWindowStyle.Maximized,
-                    Arguments = PictureBox.ImageLocation
-                });
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            finally
-            {
-                PictureBox.ImageLocation = null;
-                PictureBox.Image = null;
-            }
-        }
-
         private static void GetFileNamesForTest(string path)
         {
             var filename = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "FileList.txt");
@@ -640,53 +793,6 @@ namespace BulkCopier
                     return x;
                 });
             }
-        }
-
-        private void MainForm_KeyDown(object sender, KeyEventArgs e)
-        {
-            switch (e.KeyCode)
-            {
-                case Keys.F2 when folderBrowserDialog1.ShowDialog() == DialogResult.OK:
-                    GetFileNamesForTest(folderBrowserDialog1.SelectedPath);
-                    break;
-                case Keys.F1:
-                    MessageBox.Show(Application.ProductVersion, "Версия приложения");
-                    break;
-            }
-        }
-
-        private void DestinationBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            try
-            {
-                switch (e.KeyCode)
-                {
-                    case Keys.Enter:
-                        if (!string.IsNullOrWhiteSpace(DestinationBox.Text) && !DestinationBox.ReadOnly)
-                        {
-                            _copyFileService.SetDestinationDirectory(DestinationBox.Text);
-                            DestinationBox.BackColor = Color.LimeGreen;
-                            InputBarcodeBox.Visible = _copyFileService.IsSourceDirectorySet();
-                            DestinationBox.ReadOnly = true;
-                        }
-                        break;
-
-                    case Keys.Delete:
-                        DestinationBox.Clear();
-                        DestinationBox.ReadOnly = false;
-                        DestinationBox.BackColor = SystemColors.Control;
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        private void ProductImagesList_Resize(object sender, EventArgs e)
-        {
-            AdjustColumnWidths(ProductImagesList);
         }
 
         private void AdjustColumnWidths(ListView listView)
@@ -706,72 +812,14 @@ namespace BulkCopier
             }
         }
 
-        private void MainForm_ResizeEnd(object sender, EventArgs e)
-        {
-            _settings.FormSize = Size;
-            SaveSettings();
-        }
-
-        private void PictureBox_MouseEnter(object sender, EventArgs e)
-        {
-            PictureBox.Cursor = PictureBox.Image != null ? Cursors.Hand : DefaultCursor;
-        }
-
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            _settings.FormLocation = Location;
-            SaveSettings();
-        }
-
-        private void ResetOrder_Click_1(object sender, EventArgs e)
-        {
-            ResetToNewOrder();
-        }
-
-        private void printDocument1_PrintPage(object sender, PrintPageEventArgs e)
-        {
-            try
-            {
-                var page = _printService.GetPage();
-                e.Graphics.DrawImage(page, e.PageSettings.PrintableArea);
-                e.HasMorePages = _printService.HasNextPage();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        private void Print_ButtonClick(object sender, EventArgs e)
-        {
-            try
-            {
-                ProcessImages();
-                if (_copiedImages.Any())
-                {
-                    printPreviewDialog1.Document = printDocument;
-                    ((Form)printPreviewDialog1).WindowState = FormWindowState.Maximized;
-                    printPreviewDialog1.ShowDialog();
-                }
-            }
-            catch (InvalidOperationException io)
-            {
-                MessageBox.Show("Обработка изображения завершилась с ошибкой:\n" + io.Message);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("При печати изображений возникла ошибка:\n" + ex.Message);
-            }
-        }
-
-        private void ProcessImages()
+        private async Task ProcessImages()
         {
             try
             {
                 var imagesToProcess = _copiedImages.Where(img => (img.Count > 1) && !img.Processed);
                 if (imagesToProcess.Any())
                 {
-                    _processImagesService.Process(imagesToProcess.ToArray());
+                    await new TaskFactory().StartNew(() => _processImagesService.Process(imagesToProcess.ToArray()));
                     foreach (var productImage in imagesToProcess)
                     {
                         productImage.Processed = true;
@@ -783,40 +831,6 @@ namespace BulkCopier
             {
                 throw new InvalidOperationException(ex.Message);
             }
-        }
-
-        private void printDocument1_BeginPrint(object sender, PrintEventArgs e)
-        {
-            printDocument.DocumentName = new DirectoryInfo(_copyFileService.GetDestinationDirectoryPath()).Name;
-            _printService.SetPrintSettings(printDocument,
-                _copiedImages.ToArray(),
-                _settings);
-        }
-
-        private void printDocument1_EndPrint(object sender, PrintEventArgs e)
-        {
-            _printService.ResetPrintSettings();
-        }
-
-        private void SettingsMenuItem_Click(object sender, EventArgs e)
-        {
-            var settingsForm = new SettingsForm(printDocument, _settings);
-            settingsForm.ShowDialog();
-            UpdateSettings();
-            SetUpPrintDocument(_settings);
-        }
-
-        private void StartsWithRadio_CheckedChanged(object sender, EventArgs e)
-        {
-            if (SearchModePanel.Visible)
-            {
-                FindImages();
-            }
-        }
-
-        private void ContainsRadio_CheckedChanged(object sender, EventArgs e)
-        {
-            FindImages();
         }
     }
 }
