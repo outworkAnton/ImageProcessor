@@ -631,16 +631,25 @@ namespace BulkCopier
             }
             catch (Exception ex)
             {
-                _copyFileService.SetSourceDirectory(null);
-                _settings.SourcePath = string.Empty;
-                SaveSettings();
-                SourceBox.Clear();
-                SourceBox.BackColor = SystemColors.Control;
-                InputBarcodeBox.Clear();
-                if (MessageBox.Show(ex.Message + "\nВыбрать заново где находятся файлы?", "Ошибка при поиске файлов изображений", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                {
-                    SourceBtn.PerformClick();
-                }
+                ResetSourcePath(ex);
+            }
+        }
+
+        private void ResetSourcePath(Exception ex)
+        {
+            _copyFileService.SetSourceDirectory(null);
+            _settings.SourcePath = string.Empty;
+            SaveSettings();
+            SourceBox.Clear();
+            SourceBox.BackColor = SystemColors.Control;
+            InputBarcodeBox.Clear();
+            if (MessageBox.Show(ex.Message + "\nВыбрать заново где находятся файлы?", "Ошибка при поиске файлов изображений", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                SourceBtn.PerformClick();
+            }
+            else
+            {
+                InputBarcodeBox.Visible = false;
             }
         }
 
@@ -700,7 +709,7 @@ namespace BulkCopier
             }
             catch (IOException io)
             {
-                throw new IOException("Ошибка при обработке файла изображения\n" + io.Message);
+                ResetSourcePath(io);
             }
             catch (Exception ex)
             {

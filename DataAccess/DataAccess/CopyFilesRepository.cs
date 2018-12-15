@@ -208,13 +208,13 @@ namespace DataAccess
         {
             try
             {
+                if (_sourceDirectory == null || !_sourceDirectory.Exists)
+                {
+                    return null;
+                }
                 if (_filesFound.Count == 0)
                 {
                     FindAllFiles();
-                }
-                if (!_sourceDirectory.Exists)
-                {
-                    return null;
                 }
                 return startsWith
                     ? _filesFound.Where(f => f.Name.StartsWith(filename, StringComparison.OrdinalIgnoreCase)).ToArray()
